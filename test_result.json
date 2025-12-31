@@ -1,0 +1,10 @@
+{
+  "react": {
+    "detected": true,
+    "source": "explicit"
+  },
+  "docker": {
+    "detected": true,
+    "source": "explicit"
+  }
+}

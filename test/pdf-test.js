@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const API_URL = 'http://localhost:3000/api/generate-pdf';
+const API_URL = 'http://localhost:5001/api/generate-pdf';
 const OUTPUT_FILE = 'test_output_resume.pdf';
 
 const testCase = {
@@ -17,12 +17,12 @@ const testCase = {
         - Familiarity with Jest for testing.
         - Ability to lead a team and demonstrate strong communication skills.
     `
-};
+}
 
 async function runPdfTest() {
     console.log('--- Starting PDF Generation Test ---');
     console.log(`Target URL: ${API_URL}`);
-    console.log(`Role: ${testCase.role}`);
+    console.log(`Role: ${testCase.role} `);
     console.log('Sending Request...');
 
     try {
@@ -34,7 +34,7 @@ async function runPdfTest() {
 
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+            throw new Error(`HTTP error! status: ${response.status} - ${errorText} `);
         }
 
         const arrayBuffer = await response.arrayBuffer();
@@ -43,7 +43,7 @@ async function runPdfTest() {
         fs.writeFileSync(OUTPUT_FILE, buffer);
 
         console.log('\n--- Test Result: SUCCESS ---');
-        console.log(`PDF saved to: ${path.resolve(OUTPUT_FILE)}`);
+        console.log(`PDF saved to: ${path.resolve(OUTPUT_FILE)} `);
         console.log(`File Size: ${(buffer.length / 1024).toFixed(2)} KB`);
 
     } catch (error) {
