@@ -46,10 +46,6 @@ export const generateResumePDF = async (req, res) => {
     try {
         const { role, jobDescription } = req.body;
 
-        // console.log("jobDescription", jobDescription);
-        // console.log("role", role);
-        // console.log("resumeData", resumeData);
-
         // Pipeline mode
         if (!role) {
             return res.status(400).json({ error: 'Role is required' });
