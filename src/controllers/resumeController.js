@@ -3,7 +3,7 @@ import { Pipeline } from '../pipeline/Pipeline.js';
 import { JDAnalyzer } from '../pipeline/steps/JDAnalyzer.js';
 import { SignalMapper } from '../pipeline/steps/SignalMapper.js';
 import { ResumeRewriter } from '../pipeline/steps/ResumeRewriter.js';
-import { ATSValidator } from '../pipeline/steps/ATSValidator.js';
+import { CvWolfATSAnalyzer } from '../pipeline/steps/CvWolfATSAnalyzer.js';
 import { createPDF } from '../services/pdfGenerator.js';
 
 export const generateResume = async (req, res) => {
@@ -21,7 +21,7 @@ export const generateResume = async (req, res) => {
             .addStep(new JDAnalyzer())
             .addStep(new SignalMapper())
             .addStep(new ResumeRewriter())
-            .addStep(new ATSValidator());
+            .addStep(new CvWolfATSAnalyzer());
 
         const result = await pipeline.execute({
             resume: baseResume,
@@ -31,7 +31,8 @@ export const generateResume = async (req, res) => {
         res.json({
             success: true,
             data: result.optimizedResume,
-            meta: result.meta
+            meta: result.meta,
+            analysis: result.cvWolfAnalysis // Expose the detailed analysis
         });
     } catch (error) {
         console.error('Error serving resume request:', error);
@@ -58,12 +59,15 @@ export const generateResumePDF = async (req, res) => {
             .addStep(new JDAnalyzer())
             .addStep(new SignalMapper())
             .addStep(new ResumeRewriter())
-            .addStep(new ATSValidator());
+            .addStep(new CvWolfATSAnalyzer());
 
         const result = await pipeline.execute({
             resume: baseResume,
             jobDescription
         });
+
+
+        console.log("result", JSON.stringify(result));
 
         // Generate PDF
         const pdfBuffer = await createPDF(result.optimizedResume);
