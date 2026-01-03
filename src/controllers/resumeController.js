@@ -7,6 +7,8 @@ import { CvWolfATSAnalyzer } from '../pipeline/steps/CvWolfATSAnalyzer.js';
 import { createPDF } from '../services/pdfGenerator.js';
 import { RewriteResumeViaLLM } from '../pipeline/steps/RewriteResumeViaLLM.js';
 import { InsertNewlyCreatedResumePoints } from '../pipeline/steps/InsertNewlyCreatedResumePoints.js';
+import fs from 'fs';
+import { CriticalAnalysis } from '../pipeline/steps/CriticalAnalysis.js';
 
 export const generateResume = async (req, res) => {
     try {
@@ -60,6 +62,7 @@ export const generateResumePDF = async (req, res) => {
         // Execute Pipeline to get optimized data
         const pipeline = new Pipeline()
             .addStep(new RewriteResumeViaLLM())
+            .addStep(new CriticalAnalysis())
             .addStep(new InsertNewlyCreatedResumePoints())
         // .addStep(new JDAnalyzer())
         // .addStep(new SignalMapper())
@@ -72,7 +75,8 @@ export const generateResumePDF = async (req, res) => {
         });
 
 
-        console.log("result", JSON.stringify(result));
+        // console.log("result", JSON.stringify(result));
+        fs.writeFileSync('result.json', JSON.stringify(result));
 
         // Generate PDF
         const pdfBuffer = await createPDF(result.finalResume);

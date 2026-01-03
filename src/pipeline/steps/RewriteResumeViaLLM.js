@@ -19,27 +19,37 @@ export class RewriteResumeViaLLM extends Step {
         //     project
         // } = resume;
 
-        const professionalSummary = resume.professionalSummary;
-        const technicalSkills = resume.technicalSkills;
-        const responsibilitiesAndAchievements = resume.experience[0].responsibilitiesAndAchievements;
-        const technologies = resume.experience[0].technologies;
-        const projects = resume.projects;
+        // const professionalSummary = resume.professionalSummary;
+        // const technicalSkills = resume.technicalSkills;
+        // const responsibilitiesAndAchievements = resume.experience[0].responsibilitiesAndAchievements;
+        // const technologies = resume.experience[0].technologies;
+        // const projects = resume.projects;
+
+        const {
+            header,
+            professionalSummary,
+            education,
+            technicalSkills,
+            experience,
+            projects,
+        } = resume
 
 
         const finalPrompt = rewriteResumePrompt({
-            jobDescription,
+            header,
             professionalSummary,
+            education,
             technicalSkills,
-            responsibilitiesAndAchievements,
-            technologies,
-            projects
+            experience,
+            projects,
+            jobDescription,
         })
 
         const rewrittenResume = await llmService.generateResumeContent(finalPrompt);
 
         return {
             ...context,
-            rewrittenResume
+            rewrittenResume,
         };
     }
 }
