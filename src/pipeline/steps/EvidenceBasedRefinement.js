@@ -11,17 +11,10 @@ export class EvidenceBasedRefinement extends Step {
     async execute(context) {
         const { rewrittenResume, jobDescription, criticalAnalysisResult } = context;
 
-        // evidence based refinement
+
         const evidenceBasedRefinement = await EvidenceBasedRefinementPrompt(rewrittenResume, jobDescription, criticalAnalysisResult);
 
-        // generate evidence based refinement response
         const evidenceBasedRefinementResult = await llmService.generateResumeContent(evidenceBasedRefinement);
-
-        // fs.writeFileSync('evidenceBasedRefinementResult.json', JSON.stringify(evidenceBasedRefinementResult));
-
-        // fs.writeFileSync('rewrittenResume.txt', rewrittenResume);
-
-        // debugger;
 
         return {
             ...context,

@@ -116,6 +116,7 @@ REWRITE responsibilitiesAndAchievements:
 
 REORDER technologies array:
 - Reorder based on relevance to job description
+- MOST RELEVENT bullet points should be at the top
 - Keep all original technologies
 
 6. PROJECTS SECTION
@@ -529,6 +530,7 @@ FOR EACH SECTION:
    - Use stronger verbs (Engineered, Architected, etc.)
    - Preserve ALL original metrics and technologies
    - Only combine bullets if it improves clarity
+   - DO NOT have MORE THAN 7 bullet points.
 
 5. PROJECTS:
    - Reframe to highlight job-relevant aspects
