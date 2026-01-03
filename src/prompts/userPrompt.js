@@ -430,7 +430,7 @@ Analyze carefully. If it's good, it's good. Don't force refinement.
 // PHASE 3: EVIDENCE-BASED REFINEMENT PROMPT
 // ================================================
 
-export const EvidenceBasedRefinement = async (
+export const EvidenceBasedRefinementPrompt = async (
   rewrittenResume,
   jobDescription,
   criticalAnalysis
@@ -566,8 +566,10 @@ QUALITY CHECKLIST (BEFORE OUTPUT)
 Think critically about the analysis. Be willing to reject poor suggestions. Your goal is truthfulness first, optimization second.
 `;
 
-  const refinedResume = await callLLM(prompt);
-  return JSON.parse(refinedResume);
+  // const refinedResume = await callLLM(prompt);
+  // return JSON.parse(refinedResume);
+
+  return prompt;
 };
 
 // Main execution with error handling

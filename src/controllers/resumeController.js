@@ -9,6 +9,8 @@ import { RewriteResumeViaLLM } from '../pipeline/steps/RewriteResumeViaLLM.js';
 import { InsertNewlyCreatedResumePoints } from '../pipeline/steps/InsertNewlyCreatedResumePoints.js';
 import fs from 'fs';
 import { CriticalAnalysis } from '../pipeline/steps/CriticalAnalysis.js';
+import { EvidenceBasedRefinement } from '../pipeline/steps/EvidenceBasedRefinement.js';
+import AdmZip from 'adm-zip';
 
 export const generateResume = async (req, res) => {
     try {
@@ -63,6 +65,7 @@ export const generateResumePDF = async (req, res) => {
         const pipeline = new Pipeline()
             .addStep(new RewriteResumeViaLLM())
             .addStep(new CriticalAnalysis())
+            .addStep(new EvidenceBasedRefinement())
             .addStep(new InsertNewlyCreatedResumePoints())
         // .addStep(new JDAnalyzer())
         // .addStep(new SignalMapper())
@@ -74,20 +77,28 @@ export const generateResumePDF = async (req, res) => {
             jobDescription
         });
 
-
-        // console.log("result", JSON.stringify(result));
-        fs.writeFileSync('result.json', JSON.stringify(result));
-
         // Generate PDF
         const pdfBuffer = await createPDF(result.finalResume);
+        const evidenceBasedResume = await createPDF(result.evidenceBasedRefinementResult);
+
+        // Save locally for debugging/verification
+        fs.writeFileSync(`Resume_${role || 'Optimized'}.pdf`, pdfBuffer);
+        fs.writeFileSync(`Resume_${role || 'Optimized'}_EvidenceBased.pdf`, evidenceBasedResume);
+
+        // Create Zip
+        const zip = new AdmZip();
+        zip.addFile(`Resume_${role || 'Optimized'}.pdf`, pdfBuffer);
+        zip.addFile(`Resume_${role || 'Optimized'}_EvidenceBased.pdf`, evidenceBasedResume);
+
+        const zipBuffer = zip.toBuffer();
 
         res.set({
-            'Content-Type': 'application/pdf',
-            'Content-Length': pdfBuffer.length,
-            'Content-Disposition': `attachment; filename="Resume_${role || 'Optimized'}.pdf"`,
+            'Content-Type': 'application/zip',
+            'Content-Length': zipBuffer.length,
+            'Content-Disposition': `attachment; filename="Resumes_${role || 'Optimized'}.zip"`,
         });
 
-        res.send(pdfBuffer);
+        res.send(zipBuffer);
 
     } catch (error) {
         console.error('Error generating PDF:', error);
