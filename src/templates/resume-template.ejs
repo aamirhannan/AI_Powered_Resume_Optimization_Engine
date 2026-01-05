@@ -155,20 +155,22 @@
                     <span class="contact-separator">♦</span>
                     <% } %>
                         <% if (header.contact.location) { %>
-                            <span> 
+                            <span>
                                 <%= header.contact.location %>
                             </span>
                             <span class="contact-separator">♦</span>
                             <% } %>
                                 <% if (header.contact.email) { %>
-                                    <a target="_blank" href="mailto:<%= header.contact.email %>">
+                                    <a style="font-weight: normal; font-size: 9pt; color: #0000EE;" target="_blank"
+                                        href="mailto:<%= header.contact.email %>">
                                         <%= header.contact.email %>
                                     </a>
                                     <% } %>
                                         <% if (header.contact.links) { %>
                                             <% Object.entries(header.contact.links).forEach(([key, value])=> { %>
                                                 <span class="contact-separator">♦</span>
-                                                <a target="_blank" href="<%= value %>" target="_blank">
+                                                <a style="font-weight: normal; font-size: 9pt; color: #0000EE;"
+                                                    target="_blank" href="<%= value %>" target="_blank">
                                                     <%= key.charAt(0).toUpperCase() + key.slice(1) %>
                                                 </a>
                                                 <% }); %>
@@ -274,7 +276,7 @@
                         <span class="entry-title">
                             <%= project.title %>
                             <% if (project.links && project.links.live) { %>
-                                <a target="_blank" href="<%= project.links.live %> " style="font-weight: normal; font-size: 9pt; color: #0000EE;">[Live]</a>
+                                <a target="_blank" href="<%= project.links.live %> " style="font-weight: normal; font-size: 9pt; color: #0000EE;">[View]</a>
                             <% } %>
                         </span>
                         <span><!-- Optional Project Date --></span>
