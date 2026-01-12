@@ -1,5 +1,6 @@
 import { Step } from '../Step.js';
 import { emailService } from '../../services/emailService.js';
+import fs from 'fs';
 
 export class SendApplicationEmail extends Step {
     constructor() {
@@ -8,6 +9,12 @@ export class SendApplicationEmail extends Step {
 
     async execute(context) {
         const { targetEmail, emailSubject, coverLetter, pdfPath } = context;
+
+
+        fs.writeFileSync('coverLetter.txt', coverLetter);
+        fs.writeFileSync('emailSubject.txt', emailSubject);
+        throw new Error('Failed to send email.');
+
 
         if (!targetEmail) {
             throw new Error('Target email is missing in context.');

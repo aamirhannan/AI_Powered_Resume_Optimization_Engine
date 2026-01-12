@@ -39,7 +39,7 @@ export const processApplication = async (req, res) => {
             .addStep(new SendApplicationEmail())
 
             // 5. Cleanup
-            .addStep(new CleanupFiles());
+            // .addStep(new CleanupFiles());
 
         const result = await pipeline.execute({
             resume: baseResume,

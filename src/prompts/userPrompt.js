@@ -683,7 +683,7 @@ INSTRUCTIONS:
 - The subject line should be professional but stand out.
 - Format ideas:
     1. "Application for [Role] - [Name] - [Key Achievement/Skill]"
-    2. "[Role] Application: [Name], [Years] Exp [Tech Stack]"
+    2. "[Role] Application: [Name], [2+ years] Exp [Tech Stack]"
     3. "[Name] for [Role] | [Unique Value Prop]"
 - Return ONLY the single BEST subject line. Just one string. No quotes.
 `;
