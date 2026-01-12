@@ -8,7 +8,7 @@ export const rewriteResumePrompt = ({
   jobDescription = ""
 }) => {
   return `
-You are a senior FAANG-level technical recruiter and a Staff Software Engineer who has reviewed thousands of resumes for Google, Meta, Amazon, Apple, Netflix, and top US/UK startups.
+You are a senior technical recruiter and a Staff Software Engineer who has reviewed thousands of resumes for Google, Meta, Amazon, Apple, Netflix, and top US/UK startups.
 
 Your task is to REWRITE the existing resume data while PRESERVING ALL ORIGINAL FACTS, EXPERIENCE, AND TECHNOLOGIES. You will use Chain-of-Thought reasoning to analyze and rewrite each component.
 
@@ -287,7 +287,7 @@ export const optimizeResumePipeline = async (originalResume, jobDescription) => 
 
 export const GenerateCriticalAnalysisPrompt = async (rewrittenResume, jobDescription) => {
   const prompt = `
-You are a senior hiring manager with 15+ years of experience. Your task is to provide a brutally honest, critical analysis of a rewritten resume against a specific job description.
+You are a senior technical hiring manager with 15+ years of experience. Your task is to provide a brutally honest, critical analysis of a rewritten resume against a specific job description.
 
 CRITICAL GUIDANCE: Be honest. If the resume is already excellent and needs no changes, say so. Your job is to identify REAL gaps, not invent them.
 
