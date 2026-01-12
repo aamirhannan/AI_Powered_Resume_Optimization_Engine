@@ -10,10 +10,12 @@ const __dirname = path.dirname(__filename);
 // .env is at d:/resume-programe/.env
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
+const model = "deepseek-chat";
+
 class LLMService {
     constructor() {
         this.openai = null;
-        this.model = "deepseek-chat";
+        this.model = model;
         this.temperature = 0.2;
 
         // Pricing per 1K tokens (Approximation based on GPT-4o tiers as fallback)

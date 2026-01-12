@@ -3,69 +3,81 @@ import axios from 'axios';
 const API_URL = 'http://localhost:5002/api/process-application';
 
 const sampleJobDescription = `
-About the job
-Experience
+Hi Aamir  ,
 
-Minimum 5 years of coding experience in ReactJS (TypeScript), HTML, CSS-Pre-processors, or
+Hope you are doing well!!
 
-CSS-in-JS in creating Enterprise Applications with high performance for Responsive Web
-
-Applications.
-
-Minimum 5 years of coding experience in NodeJS, JavaScript & TypeScript and NoSQL Databases.
-Developing and implementing highly responsive user interface components using React
-
-concepts. (self-contained, reusable, and testable modules and components)
-
-Architecting and automating the build process for production, using task runners or scripts
-Knowledge of Data Structures for TypeScript.
-Monitoring and improving front-end performance.
-Banking or Retail domains knowledge is good to have.
-Hands on experience in performance tuning, debugging, monitoring.
-
-Technical Skills
-
-Excellent knowledge developing scalable and highly available Restful APIs using NodeJS
-
-technologies
-
-Well versed with CI/CD principles, and actively involved in solving, troubleshooting issues in
-
-distributed services ecosystem
-
-Understanding of containerization, experienced in Dockers, Kubernetes.
-Exposed to API gateway integrations like 3Scale.
-Understanding of Single-Sign-on or token-based authentication (Rest, JWT, OAuth)
-Possess expert knowledge of task/message queues include but not limited to: AWS, Microsoft
-
-Azure, Pushpin and Kafka.
-
-Practical experience with GraphQL is good to have.
-Writing tested, idiomatic, and documented JavaScript, HTML and CSS
-Experiencing in Developing responsive web-based UI
-Have experience on Styled Components, Tailwind CSS, Material UI and other CSS-in-JS
-
-techniques
-
-Thorough understanding of the responsibilities of the platform, database, API, caching layer,
-
-proxies, and other web services used in the system
-
-Writing non-blocking code, and resorting to advanced techniques such as multi-threading, when
-
-needed
-
-Strong proficiency in JavaScript, including DOM manipulation and the JavaScript object model
-Documenting the code inline using JSDoc or other conventions
-Thorough understanding of React.js and its core principles
-Familiarity with modern front-end build pipelines and tools
-Experience with popular React.js workflows (such as Flux or Redux or ContextAPI or Data
-
-Structures)
+I am currently hiring for Fullstack Developer for Dubai location, please respond to this email with your CV if you are looking for a job change.
 
 
-Desired Skills and Experience
-JavaScript, React
+
+Role: Full Stack Developer
+
+Location: Dubai (Onsite)
+
+Job Type: 12 Months and extendable (On Marc Ellis Payroll)
+
+Notice - Immediate Joiners only
+
+
+
+Role Description :-
+
+
+
+The full stack developer will be involved in transformation & automation projects within the organization to ensure that successfully deliver these projects on time and within budget, ensuring that the project objectives are met while adhering to PMP standard methodologies/Agile Methodology.
+
+
+
+1. Manage the complete software development process from conception to deployment which includes both the front end as well as the back end of websites and applications by applying an in-depth programming expertise, coding, and languages to meet the customers’ requirements.
+
+2. Build new, dynamic, front-end, and backend software products and apps that are dynamic and visually appealing to meet the technical requirements and customer’s expectations.
+
+3. Develop independently entire architecture, responsive design, user interaction, and user experience to meet the digital transformation agenda. Provide ideas and suggestions for ongoing improvement and add or remove features as necessary to meet customer’s expectations.
+
+4. Collaborate with development teams and product managers to create innovative software solutions using the latest advancements in programming languages and server apps. Design a plan for stability, scalability, performance optimization, and ongoing improvement.
+
+5. Explore emerging trends and technologies related to new development in web applications, programming languages, related tools, frameworks, methods, and architectures for continuous improvement.
+
+6. Use project management tools and governance to drive a project from conception to finished product.
+
+7. Lead, coach, and mentor a team of developers involved in multiple projects by providing continuous feedback and driving a culture of innovation, experiment and learning from failures
+
+
+
+Key Responsibilities :-
+
+
+
+Minimum of 6 years in relevant field.
+Proven experience as a Full Stack Developer or similar role with minimum 3 years of experience
+Experience developing Web/desktop and mobile applications
+Experience with cloud Services like Azure
+Experience maintaining API documentation with Postman and Swagger
+Experience with multiple Front End Frameworks (like React.js , Vue.js)
+Experience with Flutter and DART for creating Mobile and Web applications
+Experience with CI/CD, bash script
+Knowledge and skills:
+
+Object-oriented analysis and design using common design patterns.
+Very strong in Web designing technologies like HTML5, XHTML, CSS3, JavaScript, typescript, jQuery, AJAX and JSON
+Components, Directives, Services, View References (Parent/Child/Injection), Routing, Lifecycle processing
+Interceptors, HTTP Handlers, Reactive Forms (No template forms)
+Understanding concepts of S.O.L.I.D. Principles, IOC/DI, and S.O.C.
+LINQ and LAMDA expressions, Regular expression
+Knowledge of multiple front-end languages and libraries.
+Familiarity with UI/UX design
+Familiarity with Azure Services.
+Conducting security audits & Code reviews to identify areas of improvement
+Ensuring user experience and determining design choices
+Should have development of Micro-services experience.
+Excellent knowledge of Relational and Non-Relational Databases.
+Familiarity with databases (e.g. MySQL), web servers (e.g. NGINX)
+Knowledge of multiple back-end technologies Python (Must Have) and good to have (like Node.js, Express.js)
+Monitoring network security to ensure that unauthorized users cannot access the database server
+Build features and applications with a mobile responsive design.
+Excellent communication and teamwork skills
+
 `;
 
 const testApplication = async () => {
