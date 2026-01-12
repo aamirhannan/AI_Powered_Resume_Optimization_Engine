@@ -9,12 +9,12 @@ export class EvidenceBasedRefinement extends Step {
     }
 
     async execute(context) {
-        const { rewrittenResume, jobDescription, criticalAnalysisResult } = context;
+        const { rewrittenResume, jobDescription, criticalAnalysisResult, tokenUsage } = context;
 
 
         const evidenceBasedRefinement = await EvidenceBasedRefinementPrompt(rewrittenResume, jobDescription, criticalAnalysisResult);
 
-        const evidenceBasedRefinementResult = await llmService.generateResumeContent(evidenceBasedRefinement);
+        const evidenceBasedRefinementResult = await llmService.generateResumeContent(evidenceBasedRefinement, tokenUsage);
 
         return {
             ...context,

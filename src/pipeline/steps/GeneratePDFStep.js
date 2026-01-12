@@ -22,7 +22,17 @@ export class GeneratePDFStep extends Step {
         const pdfBuffer = await createPDF(resumeToPrint);
 
         // Save to a temporary path
-        const fileName = `Resume_${role || 'Application'}_${Date.now()}.pdf`;
+        const date = new Date();
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = months[date.getMonth()];
+        const year = date.getFullYear();
+        const formattedDate = `${day}${month}_${year}`;
+
+        // Format role: snake_case
+        const formattedRole = (role || 'Developer').replace(/\s+/g, '_').toLowerCase();
+
+        const fileName = `aamir_${formattedRole}_${formattedDate}.pdf`;
         const filePath = path.resolve(process.cwd(), fileName);
 
         fs.writeFileSync(filePath, pdfBuffer);

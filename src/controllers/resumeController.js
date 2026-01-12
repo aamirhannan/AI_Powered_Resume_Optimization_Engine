@@ -32,14 +32,16 @@ export const generateResume = async (req, res) => {
 
         const result = await pipeline.execute({
             resume: baseResume,
-            jobDescription
+            jobDescription,
+            tokenUsage: { input: 0, output: 0, total: 0, cost: 0 }
         });
 
         res.json({
             success: true,
             data: result.rewrittenResume,
             meta: result.meta,
-            analysis: result.cvWolfAnalysis // Expose the detailed analysis
+            analysis: result.cvWolfAnalysis, // Expose the detailed analysis
+            tokenUsage: result.tokenUsage
         });
     } catch (error) {
         console.error('Error serving resume request:', error);
@@ -74,7 +76,8 @@ export const generateResumePDF = async (req, res) => {
 
         const result = await pipeline.execute({
             resume: baseResume,
-            jobDescription
+            jobDescription,
+            tokenUsage: { input: 0, output: 0, total: 0, cost: 0 }
         });
 
         // Generate PDF
@@ -96,6 +99,9 @@ export const generateResumePDF = async (req, res) => {
             'Content-Type': 'application/zip',
             'Content-Length': zipBuffer.length,
             'Content-Disposition': `attachment; filename="Resumes_${role || 'Optimized'}.zip"`,
+            'X-Token-Usage-Cost': result.tokenUsage?.cost?.toFixed(4) || '0',
+            'X-Token-Input': result.tokenUsage?.input || '0',
+            'X-Token-Output': result.tokenUsage?.output || '0'
         });
 
         res.send(zipBuffer);

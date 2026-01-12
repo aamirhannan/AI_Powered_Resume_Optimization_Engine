@@ -45,7 +45,8 @@ export const processApplication = async (req, res) => {
             resume: baseResume,
             jobDescription,
             targetEmail: email,
-            role // Passed for filename generation
+            role, // Passed for filename generation
+            tokenUsage: { input: 0, output: 0, total: 0, cost: 0 } // Initialize token tracking
         });
 
         res.json({
@@ -54,7 +55,8 @@ export const processApplication = async (req, res) => {
             details: {
                 subject: result.emailSubject,
                 coverLetterSnippet: result.coverLetter?.substring(0, 50) + '...',
-                emailSentTo: result.targetEmail
+                emailSentTo: result.targetEmail,
+                tokenUsage: result.tokenUsage // Return usage stats
             }
         });
 

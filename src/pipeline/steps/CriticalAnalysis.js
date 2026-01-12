@@ -8,13 +8,13 @@ export class CriticalAnalysis extends Step {
     }
 
     async execute(context) {
-        const { rewrittenResume, jobDescription } = context;
+        const { rewrittenResume, jobDescription, tokenUsage } = context;
 
         // critical analysis
         const criticalAnalysis = await GenerateCriticalAnalysisPrompt(rewrittenResume, jobDescription);
 
         // generate critical analysis response
-        const criticalAnalysisResult = await llmService.generateResumeContent(criticalAnalysis);
+        const criticalAnalysisResult = await llmService.generateResumeContent(criticalAnalysis, tokenUsage);
 
         return {
             ...context,

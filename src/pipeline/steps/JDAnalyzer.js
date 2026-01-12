@@ -19,7 +19,7 @@ export class JDAnalyzer extends Step {
         // 2. Semantic Expansion (LLM)
         // Get list of canonical skills to validate against
         const validSkills = Object.keys(SKILL_ONTOLOGY);
-        const impliedSkills = await llmService.extractImpliedSkills(jobDescription, validSkills);
+        const impliedSkills = await llmService.extractImpliedSkills(jobDescription, validSkills, context.tokenUsage);
 
         // Merge Implied Skills (Confidence 0.6)
         impliedSkills.forEach(skill => {

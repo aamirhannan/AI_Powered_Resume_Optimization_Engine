@@ -1,6 +1,8 @@
 import { Step } from '../Step.js';
 import { emailService } from '../../services/emailService.js';
 
+import path from 'path';
+
 export class SendApplicationEmail extends Step {
     constructor() {
         super('SendApplicationEmail');
@@ -19,7 +21,10 @@ export class SendApplicationEmail extends Step {
             to: targetEmail,
             subject: emailSubject || 'Job Application',
             text: coverLetter || 'Please find my resume attached.',
-            attachments: pdfPath ? [{ path: pdfPath }] : []
+            attachments: pdfPath ? [{
+                path: pdfPath,
+                filename: path.basename(pdfPath)
+            }] : []
         });
 
         if (!success) {

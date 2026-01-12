@@ -15,12 +15,14 @@ class EmailService {
     }
 
     init() {
-        if (process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
+        if (process.env.PROD_SMTP_EMAIL && process.env.PROD_SMTP_PASSWORD) {
             this.transporter = nodemailer.createTransport({
-                service: 'gmail', // Defaulting to gmail based on typical AppPassword usage
+                host: 'smtp.gmail.com',
+                port: 587,
+                secure: false, // use STARTTLS
                 auth: {
-                    user: process.env.SMTP_EMAIL,
-                    pass: process.env.SMTP_PASSWORD
+                    user: process.env.PROD_SMTP_EMAIL,
+                    pass: process.env.PROD_SMTP_PASSWORD
                 }
             });
         } else {
@@ -36,7 +38,7 @@ class EmailService {
 
         try {
             const mailOptions = {
-                from: process.env.SMTP_EMAIL,
+                from: process.env.PROD_SMTP_EMAIL,
                 to,
                 subject,
                 text,

@@ -8,7 +8,7 @@ export class GenerateCoverLetter extends Step {
     }
 
     async execute(context) {
-        const { finalResume, jobDescription } = context;
+        const { finalResume, jobDescription, tokenUsage } = context;
         const resumeToUse = finalResume;
 
         if (!resumeToUse || !jobDescription) {
@@ -18,7 +18,7 @@ export class GenerateCoverLetter extends Step {
 
         console.log('Generating Cover Letter...');
         const prompt = generateCoverLetterPrompt(resumeToUse, jobDescription);
-        const coverLetter = await llmService.generateCoverLetter(prompt);
+        const coverLetter = await llmService.generateCoverLetter(prompt, tokenUsage);
 
         return {
             ...context,

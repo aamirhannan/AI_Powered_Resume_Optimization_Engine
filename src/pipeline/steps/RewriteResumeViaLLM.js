@@ -8,7 +8,7 @@ export class RewriteResumeViaLLM extends Step {
     }
 
     async execute(context) {
-        const { jobDescription, resume } = context;
+        const { jobDescription, resume, tokenUsage } = context;
         if (!resume) throw new Error('Resume is missing');
 
         const {
@@ -31,7 +31,7 @@ export class RewriteResumeViaLLM extends Step {
             jobDescription,
         })
 
-        const rewrittenResume = await llmService.generateResumeContent(finalPrompt);
+        const rewrittenResume = await llmService.generateResumeContent(finalPrompt, tokenUsage);
 
         return {
             ...context,

@@ -8,7 +8,7 @@ export class GenerateSubjectLine extends Step {
     }
 
     async execute(context) {
-        const { finalResume, jobDescription } = context;
+        const { finalResume, jobDescription, tokenUsage } = context;
         const resumeToUse = finalResume;
 
         if (!resumeToUse || !jobDescription) {
@@ -18,7 +18,7 @@ export class GenerateSubjectLine extends Step {
 
         console.log('Generating Subject Line...');
         const prompt = generateSubjectLinePrompt(resumeToUse, jobDescription);
-        const subjectLine = await llmService.generateSubjectLine(prompt);
+        const subjectLine = await llmService.generateSubjectLine(prompt, tokenUsage);
 
         return {
             ...context,

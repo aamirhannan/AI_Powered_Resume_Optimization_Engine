@@ -64,7 +64,7 @@ export class ResumeRewriter extends Step {
 
                     for (const bullet of job.responsibilitiesAndAchievements) {
                         try {
-                            const newBullet = await this.rewriteBullet(bullet, signals, evidence);
+                            const newBullet = await this.rewriteBullet(bullet, signals, evidence, context.tokenUsage);
                             rewrittenBullets.push(newBullet);
                         } catch (err) {
                             // Fallback
@@ -85,7 +85,7 @@ export class ResumeRewriter extends Step {
     /**
      * Orchestrates the rewriting of a single bullet.
      */
-    async rewriteBullet(bullet, signals, evidence) {
+    async rewriteBullet(bullet, signals, evidence, tokenUsage) {
         // A. Identify Start Pattern
         let targetVerb = null;
 
@@ -126,7 +126,7 @@ export class ResumeRewriter extends Step {
         }
 
         // C. Call LLM
-        const rewritten = await llmService.rewriteBullet(bullet, targetVerb, allowedKeywords);
+        const rewritten = await llmService.rewriteBullet(bullet, targetVerb, allowedKeywords, tokenUsage);
 
         // D. Safety Net (Diff Check)
         if (!this.passesSafetyCheck(bullet, rewritten)) {
