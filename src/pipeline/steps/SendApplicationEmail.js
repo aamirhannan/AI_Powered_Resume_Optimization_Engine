@@ -9,7 +9,7 @@ export class SendApplicationEmail extends Step {
     }
 
     async execute(context) {
-        const { targetEmail, emailSubject, coverLetter, pdfPath } = context;
+        const { targetEmail, emailSubject, coverLetter, pdfPath, appPassword, email } = context;
 
         if (!targetEmail) {
             throw new Error('Target email is missing in context.');
@@ -20,15 +20,33 @@ export class SendApplicationEmail extends Step {
 
         console.log(`Sending email to ${sanitizedEmail}...`);
 
-        const success = await emailService.sendEmail({
-            to: sanitizedEmail,
-            subject: emailSubject || 'Job Application',
-            text: coverLetter || 'Please find my resume attached.',
-            attachments: pdfPath ? [{
-                path: pdfPath,
-                filename: path.basename(pdfPath)
-            }] : []
-        });
+        let success;
+
+        if (appPassword && email) {
+            console.log('Using provided App Password for SMTP...');
+            success = await emailService.sendEmailWithAuth({
+                user: email, // The applicant's email (sender)
+                pass: appPassword,
+                to: sanitizedEmail,
+                subject: emailSubject || 'Job Application',
+                text: coverLetter || 'Please find my resume attached.',
+                attachments: pdfPath ? [{
+                    path: pdfPath,
+                    filename: path.basename(pdfPath)
+                }] : []
+            });
+        } else {
+            // Fallback
+            success = await emailService.sendEmail({
+                to: sanitizedEmail,
+                subject: emailSubject || 'Job Application',
+                text: coverLetter || 'Please find my resume attached.',
+                attachments: pdfPath ? [{
+                    path: pdfPath,
+                    filename: path.basename(pdfPath)
+                }] : []
+            });
+        }
 
         if (!success) {
             throw new Error('Failed to send email.');

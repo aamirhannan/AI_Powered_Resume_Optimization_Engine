@@ -1,6 +1,12 @@
-import axios from 'axios';
 
-const API_URL = 'http://localhost:5002/api/process-application';
+import axios from 'axios';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+// Default to 3000 unless specified otherwise
+const PORT = process.env.PORT || 3000;
+const API_URL = `http://localhost:${PORT}/api/process-application`;
 
 const sampleJobDescription = `
 Object-oriented analysis and design using common design patterns.
@@ -8,7 +14,6 @@ Very strong in Web designing technologies like HTML5, XHTML, CSS3, JavaScript, t
 Components, Directives, Services, View References (Parent/Child/Injection), Routing, Lifecycle processing
 Interceptors, HTTP Handlers, Reactive Forms (No template forms)
 Understanding concepts of S.O.L.I.D. Principles, IOC/DI, and S.O.C.
-
 `;
 
 const testApplication = async () => {
@@ -16,18 +21,29 @@ const testApplication = async () => {
         console.log('🚀 Starting Application Flow Test...');
         console.log('Target URL:', API_URL);
 
-        // Replace with your actual email to see the result, or use a testing inbox
-        const targetEmail = 'aamirhannan08@gmail.com';
+        // CONFIGURATION
+        // For testing, you can send the email to yourself (Target = Sender)
+        const targetEmail = 'a20173959@gmail.com';
+        const senderEmail = process.env.PROD_SMTP_EMAIL
+        const appPassword = process.env.PROD_SMTP_PASSWORD
+
+        if (!senderEmail || !appPassword || senderEmail.includes('your-sender-email')) {
+            console.warn('⚠️  WARNING: Sender credentials are strictly placeholders. Please set PROD_SMTP_EMAIL and PROD_SMTP_PASSWORD in .env or edit this file.');
+        }
 
         const requestBody = {
             role: 'fullstack',
             jobDescription: sampleJobDescription,
-            email: targetEmail
+            targetEmail: targetEmail,
+            senderEmail: senderEmail,
+            appPassword: appPassword
         };
 
         console.log('Sending request with payload:', {
             role: requestBody.role,
-            email: requestBody.email,
+            targetEmail: requestBody.targetEmail,
+            senderEmail: requestBody.senderEmail,
+            appPassword: requestBody.appPassword ? '****** (HIDDEN)' : 'MISSING',
             jdPreview: requestBody.jobDescription.substring(0, 50) + '...'
         });
 
@@ -41,17 +57,16 @@ const testApplication = async () => {
 
     } catch (error) {
         console.error('\n❌ Request Failed!');
-        console.error('Full Error:', error);
+
         if (error.response) {
             console.error('Status:', error.response.status);
             console.error('Data:', JSON.stringify(error.response.data, null, 2));
         } else if (error.request) {
-            console.error('No response received. Request was made.');
+            console.error('No response received. Server might be down or unreachable.');
             console.error('Error Code:', error.code);
         } else {
             console.error('Error Message:', error.message);
         }
-        console.error('Stack:', error.stack);
     }
 };
 
