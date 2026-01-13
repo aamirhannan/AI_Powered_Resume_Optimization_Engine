@@ -4,8 +4,8 @@ import { processApplication } from '../controllers/applicationController.js';
 
 const router = express.Router();
 
-router.post('/generate', generateResume);
-router.post('/generate-pdf', generateResumePDF);
+// router.post('/generate', generateResume);
+// router.post('/generate-pdf', generateResumePDF);
 router.post('/process-application', processApplication);
 
 export default router;

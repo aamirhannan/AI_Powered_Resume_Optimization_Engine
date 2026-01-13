@@ -22,10 +22,10 @@ class LLMService {
         // Engineering-grade pricing model with explicit units and caching support
         this.pricing = {
             "deepseek-chat": {
-                unit: "per_1k_tokens",
-                input: 0.00175,
-                output: 0.014,
-                cached_input: 0.000175
+                "unit": "per_1k_tokens",
+                "input": 0.00028,
+                "output": 0.00042,
+                "cached_input": 0.000028
             },
             "deepseek-reasoner": {
                 "unit": "per_1k_tokens",

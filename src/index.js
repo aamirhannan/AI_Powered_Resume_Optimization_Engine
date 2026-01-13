@@ -2,9 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import resumeRoutes from './routes/resumeRoutes.js';
+import connectDB from './config/db.js';
+import { startWorker } from './workers/jobWorker.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Connect to MongoDB
+connectDB();
 
 // Middleware
 app.use(cors());
@@ -21,4 +26,6 @@ app.get('/health', (req, res) => {
 // Start Server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+    // Start the background worker
+    startWorker();
 });
