@@ -5,11 +5,11 @@ import { SignalMapper } from '../pipeline/steps/SignalMapper.js';
 import { ResumeRewriter } from '../pipeline/steps/ResumeRewriter.js';
 import { CvWolfATSAnalyzer } from '../pipeline/steps/CvWolfATSAnalyzer.js';
 import { createPDF } from '../services/pdfGenerator.js';
-import { RewriteResumeViaLLM } from '../pipeline/steps/RewriteResumeViaLLM.js';
-import { InsertNewlyCreatedResumePoints } from '../pipeline/steps/InsertNewlyCreatedResumePoints.js';
+import { RewriteResumeViaLLM } from '../pipeline/steps/recrute-outreach-via-email/RewriteResumeViaLLM.js';
+import { InsertNewlyCreatedResumePoints } from '../pipeline/steps/recrute-outreach-via-email/InsertNewlyCreatedResumePoints.js';
 import fs from 'fs';
-import { CriticalAnalysis } from '../pipeline/steps/CriticalAnalysis.js';
-import { EvidenceBasedRefinement } from '../pipeline/steps/EvidenceBasedRefinement.js';
+import { CriticalAnalysis } from '../pipeline/steps/recrute-outreach-via-email/CriticalAnalysis.js';
+import { EvidenceBasedRefinement } from '../pipeline/steps/recrute-outreach-via-email/EvidenceBasedRefinement.js';
 import AdmZip from 'adm-zip';
 
 export const generateResume = async (req, res) => {

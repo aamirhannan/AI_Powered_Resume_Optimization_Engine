@@ -5,13 +5,13 @@ import { decrypt } from '../utils/crypto.js';
 import { emailService } from '../services/emailService.js';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const WORKER_ID = Math.random().toString(36).substring(7).toUpperCase();
 
 export const startWorker = async () => {
-    console.log('👷 Application Worker (SQS) started...');
+    console.log(`👷 Application Worker ${WORKER_ID} (SQS) started...`);
 
     while (true) {
         try {
-            // 1. Long Poll SQS for messages
             const messages = await receiveMessagesFromQueue();
             console.log(`Received ${messages.length} messages from SQS.`);
 

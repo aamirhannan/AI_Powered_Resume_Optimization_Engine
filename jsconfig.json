@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "#src/*": [
+                "./src/*"
+            ],
+            "#services/*": [
+                "./src/services/*"
+            ],
+            "#models/*": [
+                "./src/models/*"
+            ],
+            "#utils/*": [
+                "./src/utils/*"
+            ],
+            "#pipeline/*": [
+                "./src/pipeline/*"
+            ],
+            "#prompts/*": [
+                "./src/prompts/*"
+            ]
+        }
+    }
+}

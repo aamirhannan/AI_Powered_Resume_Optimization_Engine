@@ -1,6 +1,6 @@
-import { Step } from '../Step.js';
-import { llmService } from '../../services/llmService.js';
-import { generateSubjectLinePrompt } from '../../prompts/userPrompt.js';
+import { Step } from '#pipeline/Step.js';
+import { llmService } from '#services/llmService.js';
+import { generateSubjectLinePrompt } from '#prompts/userPrompt.js';
 
 export class GenerateSubjectLine extends Step {
     constructor() {

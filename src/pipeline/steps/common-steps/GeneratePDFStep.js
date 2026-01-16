@@ -1,5 +1,5 @@
-import { Step } from '../Step.js';
-import { createPDF } from '../../services/pdfGenerator.js';
+import { Step } from '#pipeline/Step.js';
+import { createPDF } from '#services/pdfGenerator.js';
 import fs from 'fs';
 import path from 'path';
 

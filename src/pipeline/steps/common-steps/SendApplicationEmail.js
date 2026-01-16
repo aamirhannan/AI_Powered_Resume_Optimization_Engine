@@ -1,5 +1,5 @@
-import { Step } from '../Step.js';
-import { emailService } from '../../services/emailService.js';
+import { Step } from '#pipeline/Step.js';
+import { emailService } from '#services/emailService.js';
 
 import path from 'path';
 
