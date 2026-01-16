@@ -12,7 +12,17 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "imports": {
+    "#src/*": "./src/*",
+    "#services/*": "./src/services/*",
+    "#models/*": "./src/models/*",
+    "#controllers/*": "./src/controllers/*",
+    "#utils/*": "./src/utils/*",
+    "#pipeline/*": "./src/pipeline/*",
+    "#prompts/*": "./src/prompts/*"
+  },
   "dependencies": {
+    "@aws-sdk/client-sqs": "^3.967.0",
     "adm-zip": "^0.5.16",
     "axios": "^1.13.2",
     "body-parser": "^2.2.1",
@@ -23,7 +33,8 @@
     "mongoose": "^8.21.0",
     "nodemailer": "^7.0.12",
     "openai": "^6.15.0",
-    "puppeteer": "^24.34.0"
+    "puppeteer": "^24.34.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"

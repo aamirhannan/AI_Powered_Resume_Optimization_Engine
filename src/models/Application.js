@@ -1,7 +1,14 @@
 
 import mongoose from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
 const applicationSchema = new mongoose.Schema({
+    applicationID: {
+        type: String,
+        default: uuidv4,
+        required: true,
+        unique: true
+    },
     role: {
         type: String,
         required: true

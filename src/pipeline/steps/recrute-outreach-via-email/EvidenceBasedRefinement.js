@@ -1,6 +1,6 @@
-import { EvidenceBasedRefinementPrompt } from "../../prompts/userPrompt.js";
-import { Step } from "../Step.js";
-import { llmService } from "../../services/llmService.js";
+import { EvidenceBasedRefinementPrompt } from "#prompts/userPrompt.js";
+import { Step } from "#pipeline/Step.js";
+import { llmService } from "#services/llmService.js";
 import fs from "fs";
 
 export class EvidenceBasedRefinement extends Step {
