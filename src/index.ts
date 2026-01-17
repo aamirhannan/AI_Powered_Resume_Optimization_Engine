@@ -12,14 +12,15 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import resumeRoutes from '#src/routes/resumeRoutes';
-import connectDB from '#src/config/db';
+// import connectDB from '#src/config/db';
 import { startWorker } from '#src/workers/jobWorker';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Connect to MongoDB
-connectDB();
+// connectDB();
+
 
 // Middleware
 app.use(cors());

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.967.0",
+    "@supabase/supabase-js": "^2.90.1",
     "adm-zip": "^0.5.16",
     "axios": "^1.13.2",
     "body-parser": "^2.2.1",
