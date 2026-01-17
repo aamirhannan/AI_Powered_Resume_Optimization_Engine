@@ -5,21 +5,23 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon --inspect src/index.js"
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon --exec tsx src/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "imports": {
-    "#src/*": "./src/*",
-    "#services/*": "./src/services/*",
-    "#models/*": "./src/models/*",
-    "#controllers/*": "./src/controllers/*",
-    "#utils/*": "./src/utils/*",
-    "#pipeline/*": "./src/pipeline/*",
-    "#prompts/*": "./src/prompts/*"
+    "#src/*": "./dist/*.js",
+    "#services/*": "./dist/services/*.js",
+    "#models/*": "./dist/models/*.js",
+    "#controllers/*": "./dist/controllers/*.js",
+    "#utils/*": "./dist/utils/*.js",
+    "#pipeline/*": "./dist/pipeline/*.js",
+    "#prompts/*": "./dist/prompts/*.js",
+    "#repositories/*": "./dist/repositories/*.js"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.967.0",
@@ -37,6 +39,16 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "@types/adm-zip": "^0.5.7",
+    "@types/body-parser": "^1.19.6",
+    "@types/cors": "^2.8.19",
+    "@types/ejs": "^3.1.5",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.0.9",
+    "@types/nodemailer": "^7.0.5",
+    "@types/uuid": "^10.0.0",
+    "nodemon": "^3.1.11",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }
