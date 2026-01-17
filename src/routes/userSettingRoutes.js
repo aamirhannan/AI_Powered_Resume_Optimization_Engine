@@ -1,9 +1,9 @@
 import express from 'express';
-import { getUserSettings, createUserSettings } from '../controllers/userSettingController.js';
+import { getUserSettings, updateUserSettings } from '../controllers/userSettingController.js';
 
 const router = express.Router();
 
-router.get('/user-settings', getUserSettings);
-router.post('/user-settings', createUserSettings);
+router.get('/get-user-settings', getUserSettings);
+router.post('/update-user-settings', updateUserSettings);
 
 export default router;
