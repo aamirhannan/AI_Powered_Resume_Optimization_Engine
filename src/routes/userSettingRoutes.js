@@ -1,8 +1,9 @@
-import express, { Router } from 'express';
+import express from 'express';
+import { getUserSettings, createUserSettings } from '../controllers/userSettingController.js';
 
 const router = express.Router();
 
-router.get('/resume-generation', () => { });
-router.post('/resume-generation', () => { });
+router.get('/user-settings', getUserSettings);
+router.post('/user-settings', createUserSettings);
 
 export default router;

@@ -1,8 +1,9 @@
-import express, { Router } from 'express';
+import express from 'express';
+import { getMasterResume, createMasterResume } from '../controllers/masterResumeController.js';
 
 const router = express.Router();
 
-router.get('/master-resume', () => { });
-router.post('/master-resume', () => { });
+router.get('/master-resume', getMasterResume);
+router.post('/master-resume', createMasterResume);
 
 export default router;
