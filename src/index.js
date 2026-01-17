@@ -14,6 +14,7 @@ import bodyParser from 'body-parser';
 import resumeRoutes from './routes/resumeRoutes.js';
 import connectDB from './config/db.js';
 import { startWorker } from './workers/jobWorker.js';
+import routes from './routes/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +28,7 @@ app.use(bodyParser.json());
 
 // Routes
 app.use('/api', resumeRoutes);
+app.use('/api/v1', routes);
 
 // Health check
 app.get('/health', (req, res) => {
