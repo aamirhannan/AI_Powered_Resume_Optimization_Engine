@@ -9,7 +9,7 @@ import { GenerateCoverLetter } from '#pipeline/steps/common-steps/GenerateCoverL
 import { GenerateSubjectLine } from '#pipeline/steps/common-steps/GenerateSubjectLine';
 import { SendApplicationEmail } from '#pipeline/steps/common-steps/SendApplicationEmail';
 import { CleanupFiles } from '#pipeline/steps/common-steps/CleanupFiles';
-import Application from '#models/Application';
+import { applicationRepository } from '#repositories/applicationRepository';
 import dotenv from 'dotenv';
 import { Request, Response } from 'express';
 import { sendMessageToQueue } from '#services/sqsService';
@@ -36,11 +36,7 @@ export const processApplication = async (req: Request, res: Response): Promise<a
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-        const existingApp = await Application.findOne({
-            email: targetEmail, // We look for duplicates sent TO this email
-            role,
-            createdAt: { $gte: sevenDaysAgo }
-        });
+        const existingApp = await applicationRepository.findDuplicate(targetEmail, role, sevenDaysAgo);
 
         if (existingApp) {
             return res.status(429).json({
@@ -50,15 +46,13 @@ export const processApplication = async (req: Request, res: Response): Promise<a
             });
         }
 
-        // Save to DB with PENDING status (WITHOUT PASSWORD)
-        const application = new Application({
+        // Save to DB via Repository
+        const savedApp = await applicationRepository.create({
             role,
             jobDescription,
             email: targetEmail,
             status: 'PENDING',
         });
-
-        const savedApp = await application.save();
 
         // Encrypt Password
         const encryptedPassword = encrypt(appPassword);
@@ -145,8 +139,8 @@ export const retryFailedApplications = async (req: Request, res: Response): Prom
             return res.status(400).json({ error: 'senderEmail and appPassword are required to retry jobs.' });
         }
 
-        // 1. Fetch failed tasks
-        const failedApps = await Application.find({ status: 'IN_PROGRESS' });
+        // 1. Fetch failed tasks via Repository
+        const failedApps = await applicationRepository.findFailedApplications();
 
         if (failedApps.length === 0) {
             return res.status(200).json({ success: true, message: 'No failed applications found to retry.' });
@@ -158,7 +152,7 @@ export const retryFailedApplications = async (req: Request, res: Response): Prom
         const encryptedPassword = encrypt(appPassword);
         let retriedCount = 0;
 
-        // 2 & 3. Push to Queue
+        // 2 & 3. Push to Queue & Update Status via Repository
         for (const app of failedApps) {
             await sendMessageToQueue({
                 applicationID: app.applicationID,
@@ -166,12 +160,10 @@ export const retryFailedApplications = async (req: Request, res: Response): Prom
                 senderEmail: senderEmail
             });
 
-            // Update status back to PENDING so worker picks it up as a "new" attempt (logic-wise)
-            // primarily to reflect in UI/DB that it's queued again.
-            app.status = 'PENDING';
-            app.error = null; // Clear previous error
-            app.updatedAt = new Date();
-            await app.save();
+            await applicationRepository.update(app.applicationID, {
+                status: 'PENDING',
+                error: null
+            });
             retriedCount++;
         }
 

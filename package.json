@@ -20,7 +20,8 @@
     "#controllers/*": "./dist/controllers/*.js",
     "#utils/*": "./dist/utils/*.js",
     "#pipeline/*": "./dist/pipeline/*.js",
-    "#prompts/*": "./dist/prompts/*.js"
+    "#prompts/*": "./dist/prompts/*.js",
+    "#repositories/*": "./dist/repositories/*.js"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.967.0",

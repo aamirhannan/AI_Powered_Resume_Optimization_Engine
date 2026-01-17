@@ -1,4 +1,4 @@
-import Application from '#models/Application';
+import { applicationRepository } from '#repositories/applicationRepository';
 import { executeApplicationPipeline } from '#controllers/applicationController';
 import { receiveMessagesFromQueue, deleteMessageFromQueue } from '#services/sqsService';
 import { decrypt } from '#utils/crypto';
@@ -31,8 +31,8 @@ export const startWorker = async (): Promise<void> => {
                     const { applicationID, encryptedPassword, senderEmail } = JSON.parse(Body);
                     console.log(`👷 Worker received job: ${applicationID}`);
 
-                    // SEARCH BY CUSTOM UUID, NOT _id
-                    const job = await Application.findOne({ applicationID });
+                    // SEARCH VIA REPOSITORY
+                    const job = await applicationRepository.findByApplicationID(applicationID);
 
                     if (!job) {
                         console.error(`❌ Job ${applicationID} not found in DB. Deleting from queue.`);
@@ -62,19 +62,19 @@ export const startWorker = async (): Promise<void> => {
                         const errorMsg = `Invalid App Password or SMTP Error for ${senderEmail}. Aborting pipeline.`;
                         console.error(`❌ ${errorMsg}`);
 
-                        job.status = 'FAILED';
-                        job.error = errorMsg;
-                        job.updatedAt = new Date();
-                        await job.save();
+                        await applicationRepository.update(applicationID, {
+                            status: 'FAILED',
+                            error: errorMsg
+                        });
 
                         await deleteMessageFromQueue(ReceiptHandle);
                         continue; // Skip the pipeline!
                     }
 
                     // Mark IN_PROGRESS
-                    job.status = 'IN_PROGRESS';
-                    job.updatedAt = new Date();
-                    await job.save();
+                    await applicationRepository.update(applicationID, {
+                        status: 'IN_PROGRESS'
+                    });
 
                     // Execute Pipeline
                     console.log('--- Debug: Preparing Pipeline ---');
@@ -91,14 +91,14 @@ export const startWorker = async (): Promise<void> => {
                     });
 
                     // Success
-                    job.status = 'SUCCESS';
-                    job.result = {
-                        subject: result.emailSubject,
-                        emailSentTo: result.targetEmail,
-                        tokenUsage: result.tokenUsage
-                    };
-                    job.updatedAt = new Date();
-                    await job.save();
+                    await applicationRepository.update(applicationID, {
+                        status: 'SUCCESS',
+                        result: {
+                            subject: result.emailSubject,
+                            emailSentTo: result.targetEmail,
+                            tokenUsage: result.tokenUsage
+                        }
+                    });
 
                     console.log(`✅ Job ${job._id} COMPLETED.`);
 
@@ -111,13 +111,10 @@ export const startWorker = async (): Promise<void> => {
                     // If we have a job reference, update it
                     try {
                         const { applicationID } = JSON.parse(Body);
-                        const job = await Application.findOne({ applicationID });
-                        if (job) {
-                            job.status = 'FAILED';
-                            job.error = err.message;
-                            job.updatedAt = new Date();
-                            await job.save();
-                        }
+                        await applicationRepository.update(applicationID, {
+                            status: 'FAILED',
+                            error: err.message
+                        });
                     } catch (dbErr) { /* ignore */ }
 
                     // Optional: Don't delete message if you want SQS to retry (VisibilityTimeout)

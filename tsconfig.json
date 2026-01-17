@@ -32,6 +32,9 @@
             ],
             "#prompts/*": [
                 "./src/prompts/*"
+            ],
+            "#repositories/*": [
+                "./src/repositories/*"
             ]
         }
     },
