@@ -1,0 +1,45 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowSyntheticDefaultImports": true,
+        "noImplicitAny": false,
+        "paths": {
+            "#src/*": [
+                "./src/*"
+            ],
+            "#services/*": [
+                "./src/services/*"
+            ],
+            "#models/*": [
+                "./src/models/*"
+            ],
+            "#controllers/*": [
+                "./src/controllers/*"
+            ],
+            "#utils/*": [
+                "./src/utils/*"
+            ],
+            "#pipeline/*": [
+                "./src/pipeline/*"
+            ],
+            "#prompts/*": [
+                "./src/prompts/*"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.test.ts"
+    ]
+}
