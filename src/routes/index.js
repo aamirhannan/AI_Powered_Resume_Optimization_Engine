@@ -1,10 +1,10 @@
 import express from "express";
-import { founderOutreachesRoutes } from "./founderOutreachesRoutes";
-import { emailAutomationRoutes } from "./emailAutomationRoutes";
-import { generatedResumeRoutes } from "./generatedResumeRoutes";
-import { masterResumeRoutes } from "./masterResumeRoutes";
-import { resumeGenerationRoutes } from "./resumeGenerationRoutes";
-import { userSettingRoutes } from "./userSettingRoutes";
+import founderOutreachesRoutes from "./founderOutreachesRoutes.js";
+import emailAutomationRoutes from "./emailAutomationRoutes.js";
+import generatedResumeRoutes from "./generatedResumeRoutes.js";
+import masterResumeRoutes from "./masterResumeRoutes.js";
+import resumeGenerationRoutes from "./resumeGenerationRoute.js";
+import userSettingRoutes from "./userSettingRoutes.js";
 
 const router = express.Router();
 

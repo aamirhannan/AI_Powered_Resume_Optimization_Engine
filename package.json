@@ -12,15 +12,6 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "imports": {
-    "#src/*": "./src/*",
-    "#services/*": "./src/services/*",
-    "#models/*": "./src/models/*",
-    "#controllers/*": "./src/controllers/*",
-    "#utils/*": "./src/utils/*",
-    "#pipeline/*": "./src/pipeline/*",
-    "#prompts/*": "./src/prompts/*"
-  },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.967.0",
     "adm-zip": "^0.5.16",
