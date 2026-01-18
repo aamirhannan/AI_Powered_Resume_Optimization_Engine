@@ -1,8 +1,9 @@
-import Application from '../models/Application.js';
 import { executeApplicationPipeline } from '../controllers/applicationController.js';
 import { receiveMessagesFromQueue, deleteMessageFromQueue } from '../services/sqsService.js';
 import { decrypt } from '../utils/crypto.js';
 import { emailService } from '../services/emailService.js';
+import { supabaseAdmin } from '../config/supabaseAdmin.js';
+import { snakeToCamel } from '../controllers/utils.js';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const WORKER_ID = Math.random().toString(36).substring(7).toUpperCase();
@@ -13,46 +14,59 @@ export const startWorker = async () => {
     while (true) {
         try {
             const messages = await receiveMessagesFromQueue();
-            console.log(`Received ${messages.length} messages from SQS.`);
 
             if (!messages || messages.length === 0) {
-                // If receiveMessagesFromQueue is configured for long polling (WaitTimeSeconds: 20),
-                // this loop will naturally handle waits. If not, minimal sleep.
                 continue;
             }
 
+            console.log(`Received ${messages.length} messages from SQS.`);
+
             for (const message of messages) {
-                console.log(`👷 Worker received job: ${message}`);
                 const { Body, ReceiptHandle } = message;
 
                 try {
-                    const { applicationID, encryptedPassword, senderEmail } = JSON.parse(Body);
-                    console.log(`👷 Worker received job: ${applicationID}`);
+                    // Task payload structure: { applicationID, senderEmail, encryptedPassword }
+                    // Note: 'applicationID' maps to 'id' in createEmailAutomation controller
+                    const { id, encryptedPassword, senderEmail } = JSON.parse(Body);
 
-                    // SEARCH BY CUSTOM UUID, NOT _id
-                    const job = await Application.findOne({ applicationID });
+                    console.log(`👷 Worker received job: ${id}`);
 
-                    if (!job) {
-                        console.error(`❌ Job ${applicationID} not found in DB. Deleting from queue.`);
+                    // 1. Fetch Job from Supabase (email_automations table)
+                    // We use supabaseAdmin to bypass RLS since we are a background worker
+                    const { data: job, error: fetchError } = await supabaseAdmin
+                        .from('email_automations')
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+
+                    if (fetchError || !job) {
+                        console.log("fetchError", fetchError)
+                        console.error(`❌ Job ${id} not found in DB or error: ${fetchError?.message}. Deleting from queue.`);
                         await deleteMessageFromQueue(ReceiptHandle);
                         continue;
                     }
 
                     if (job.status === 'SUCCESS' || job.status === 'FAILED') {
-                        console.log(`⚠️ Job ${applicationID} already processed. Deleting duplicate.`);
+                        console.log(`⚠️ Job ${id} already processed (${job.status}). Deleting duplicate.`);
                         await deleteMessageFromQueue(ReceiptHandle);
                         continue;
                     }
 
-                    // Decrypt Password
+                    // 2. Decrypt Password
                     let appPassword = null;
                     try {
                         appPassword = decrypt(encryptedPassword);
                     } catch (e) {
-                        throw new Error('Failed to decrypt App Password. Invalid key or data.');
+                        const failError = 'Failed to decrypt App Password. Invalid key or data.';
+                        console.error(failError);
+                        await supabaseAdmin.from('email_automations')
+                            .update({ status: 'FAILED', error: failError, updated_at: new Date() })
+                            .eq('id', id);
+                        await deleteMessageFromQueue(ReceiptHandle);
+                        continue;
                     }
 
-                    // --- FAIL FAST: Verify Credentials ---
+                    // 3. Verify SMTP Credentials
                     console.log(`Verifying SMTP credentials for ${senderEmail}...`);
                     const isCredsValid = await emailService.verifyCredentials(senderEmail, appPassword);
 
@@ -60,67 +74,61 @@ export const startWorker = async () => {
                         const errorMsg = `Invalid App Password or SMTP Error for ${senderEmail}. Aborting pipeline.`;
                         console.error(`❌ ${errorMsg}`);
 
-                        job.status = 'FAILED';
-                        job.error = errorMsg;
-                        job.updatedAt = new Date();
-                        await job.save();
+                        await supabaseAdmin.from('email_automations')
+                            .update({ status: 'FAILED', error: errorMsg, updated_at: new Date() })
+                            .eq('id', id);
 
                         await deleteMessageFromQueue(ReceiptHandle);
-                        continue; // Skip the pipeline!
+                        continue;
                     }
 
-                    // Mark IN_PROGRESS
-                    job.status = 'IN_PROGRESS';
-                    job.updatedAt = new Date();
-                    await job.save();
+                    // 4. Mark IN_PROGRESS
+                    await supabaseAdmin.from('email_automations')
+                        .update({ status: 'IN_PROGRESS', updated_at: new Date() })
+                        .eq('id', id);
 
-                    // Execute Pipeline
+                    // 5. Execute Pipeline
+                    // Map snake_case DB fields to camelCase for pipeline if necessary, 
+                    // or just pass them as is. The pipeline expects: role, jobDescription, targetEmail
+                    const jobDetails = snakeToCamel(job);
+
                     console.log('--- Debug: Preparing Pipeline ---');
-                    console.log('Role:', job.role);
-                    console.log('Target Email (from DB):', job.email);
-                    console.log('Sender Email (from SQS):', senderEmail);
+                    console.log('Role:', jobDetails.role);
+                    console.log('Target Email:', jobDetails.targetEmail);
 
                     const result = await executeApplicationPipeline({
-                        role: job.role,
-                        jobDescription: job.jobDescription,
-                        targetEmail: job.email, // DB 'email' is the Target/Recruiter
-                        senderEmail: senderEmail, // From SQS
-                        appPassword: appPassword // Decrypted
+                        role: jobDetails.role,
+                        jobDescription: jobDetails.jobDescription,
+                        targetEmail: jobDetails.targetEmail,
+                        senderEmail: senderEmail,
+                        appPassword: appPassword
                     });
 
-                    // Success
-                    job.status = 'SUCCESS';
-                    job.result = {
-                        subject: result.emailSubject,
-                        emailSentTo: result.targetEmail,
-                        tokenUsage: result.tokenUsage
-                    };
-                    job.updatedAt = new Date();
-                    await job.save();
+                    // 6. Success Update
+                    // Note: 'result' column doesn't exist in your schema provided, 
+                    // assuming we just update status or add text logs if needed.
+                    await supabaseAdmin.from('email_automations')
+                        .update({
+                            status: 'SUCCESS',
+                            updated_at: new Date()
+                        })
+                        .eq('id', id);
 
-                    console.log(`✅ Job ${job._id} COMPLETED.`);
-
-                    // Acknowledge (Delete) from SQS
+                    console.log(`✅ Job ${id} COMPLETED.`);
                     await deleteMessageFromQueue(ReceiptHandle);
 
                 } catch (err) {
                     console.error(`❌ Job Failed:`, err);
 
-                    // If we have a job reference, update it
                     try {
-                        const { applicationID } = JSON.parse(Body);
-                        const job = await Application.findOne({ applicationID });
-                        if (job) {
-                            job.status = 'FAILED';
-                            job.error = err.message;
-                            job.updatedAt = new Date();
-                            await job.save();
+                        const { id } = JSON.parse(Body);
+                        if (id) {
+                            await supabaseAdmin.from('email_automations')
+                                .update({ status: 'FAILED', error: err.message, updated_at: new Date() })
+                                .eq('id', id);
                         }
                     } catch (dbErr) { /* ignore */ }
 
-                    // Optional: Don't delete message if you want SQS to retry (VisibilityTimeout)
-                    // Or delete it if it's a permanent failure (like invalid JSON)
-                    // For now, let's delete to prevent infinite loops of bad jobs
                     await deleteMessageFromQueue(ReceiptHandle);
                 }
             }

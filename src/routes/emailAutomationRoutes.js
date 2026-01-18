@@ -1,9 +1,10 @@
 import express from 'express';
-import { getEmailAutomation, createEmailAutomation } from '../controllers/emailAutomationController.js';
+import { getEmailAutomation, createEmailAutomation, updateEmailAutomation } from '../controllers/emailAutomationController.js';
 
 const router = express.Router();
 
-router.get('/email-automation', getEmailAutomation);
-router.post('/email-automation', createEmailAutomation);
+router.get('/get-emails', getEmailAutomation);
+router.post('/create-email', createEmailAutomation);
+router.put('/update-email/:id', updateEmailAutomation);
 
 export default router;
