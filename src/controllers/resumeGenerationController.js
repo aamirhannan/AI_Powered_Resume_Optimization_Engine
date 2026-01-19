@@ -249,3 +249,79 @@ export const createResumeGeneration = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
+
+export const updateResumeGeneration = async (req, res) => {
+    try {
+        const supabase = getAuthenticatedClient(req.accessToken);
+        const { id, role, jobDescription } = req.body;
+
+        if (!id) {
+            return res.status(400).json({ error: 'ID is required' });
+        }
+
+        const baseResume = getResumeByRole(role);
+
+        // Execute Pipeline to get optimized data
+        const pipeline = new Pipeline()
+            .addStep(new RewriteResumeViaLLM())
+            .addStep(new CriticalAnalysis())
+            .addStep(new EvidenceBasedRefinement())
+            .addStep(new InsertNewlyCreatedResumePoints());
+
+        const result = await pipeline.execute({
+            resume: baseResume,
+            jobDescription,
+            tokenUsage: { input: 0, output: 0, total: 0, cost: 0 }
+        });
+
+        // Generate PDF
+        const evidenceBasedResume = await createPDF(result.evidenceBasedRefinementResult);
+
+        // Upload PDF to Supabase Storage
+        const pdfPath = await uploadResumePDF(supabase, req.user.id, evidenceBasedResume);
+
+        // Update entry in generated_resumes table
+        const updatedGeneratedResume = await generatedResumeDbController.updateGeneratedResume(supabase, id, pdfPath);
+
+        const generationData = {
+            // generated_resume_id: updatedGeneratedResume.id,
+            role,
+            prev_resume_content: baseResume,
+            new_resume_content: result.evidenceBasedRefinementResult,
+            status: "SUCCESS",
+        };
+
+        await dbController.updateResumeGeneration(supabase, generationData, req.user.id);
+
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Length': evidenceBasedResume.length,
+            'Content-Disposition': `attachment; filename="Resumes_${role || 'Optimized'}.pdf"`,
+            'X-Token-Usage-Cost': result.tokenUsage?.cost?.toFixed(4) || '0',
+            'X-Token-Input': result.tokenUsage?.input || '0',
+            'X-Token-Output': result.tokenUsage?.output || '0'
+        });
+
+        res.send(evidenceBasedResume);
+
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+
+export const generateResumePdf = async (req, res) => {
+    const { newResumeContent, role } = req.body;
+    const resumeData = newResumeContent || req.body;
+    const evidenceBasedResume = await createPDF(resumeData);
+
+    res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Length': evidenceBasedResume.length,
+        'Content-Disposition': `attachment; filename="Resumes_${role || 'Optimized'}.pdf"`,
+    });
+
+    res.send(evidenceBasedResume);
+} 
