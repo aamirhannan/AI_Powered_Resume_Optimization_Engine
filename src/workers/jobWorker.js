@@ -4,6 +4,7 @@ import { decrypt } from '../utils/crypto.js';
 import { emailService } from '../services/emailService.js';
 import { supabaseAdmin } from '../config/supabaseAdmin.js';
 import { snakeToCamel } from '../controllers/utils.js';
+import { getCompanyFromEmail } from '../utils/utilFunctions.js';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const WORKER_ID = Math.random().toString(36).substring(7).toUpperCase();
@@ -104,12 +105,19 @@ export const startWorker = async () => {
                         appPassword: appPassword
                     });
 
+                    console.log('--- Debug: Pipeline Result ---');
+                    console.log('Result:', JSON.stringify(result));
+
                     // 6. Success Update
                     // Note: 'result' column doesn't exist in your schema provided, 
                     // assuming we just update status or add text logs if needed.
                     await supabaseAdmin.from('email_automations')
                         .update({
                             status: 'SUCCESS',
+                            resume_content: result.finalResume || '',
+                            email_subject: result.emailSubject || '',
+                            cover_letter: result.coverLetter || '',
+                            company: getCompanyFromEmail(result.targetEmail),
                             updated_at: new Date()
                         })
                         .eq('id', id);

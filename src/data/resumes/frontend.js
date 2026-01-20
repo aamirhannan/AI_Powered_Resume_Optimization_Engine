@@ -6,9 +6,9 @@ export const frontend = {
             "location": "Bangalore, India",
             "email": "aamirhannansde@gmail.com",
             "links": {
-                "linkedin": "LinkedIn",
-                "leetcode": "LeetCode",
-                "github": "GitHub"
+                "linkedin": "https://www.linkedin.com/in/aamirhannan/",
+                "leetcode": "https://leetcode.com/u/aamir_hannan/",
+                "github": "https://github.com/aamirhannan"
             }
         }
     },
