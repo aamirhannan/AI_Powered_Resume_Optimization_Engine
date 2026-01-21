@@ -27,11 +27,9 @@ export const startWorker = async () => {
                 const { Body, ReceiptHandle } = message;
 
                 try {
-                    // Task payload structure: { applicationID, senderEmail, encryptedPassword }
-                    // Note: 'applicationID' maps to 'id' in createEmailAutomation controller
-                    // Task payload structure: { applicationID, senderEmail, encryptedPassword, logId }
-                    // Note: 'applicationID' maps to 'id' in createEmailAutomation controller
                     const { id, encryptedPassword, senderEmail, logId, company, role } = JSON.parse(Body);
+
+                    let duration_ms = Date.now();
 
                     if (logId) {
                         await logStep(supabaseAdmin, logId, 'WORKER_RECEIVED', 'SUCCESS', { workerId: WORKER_ID });
@@ -149,12 +147,14 @@ export const startWorker = async () => {
                     console.log(`✅ Job ${id} COMPLETED.`);
 
                     if (logId) {
+                        duration_ms = Date.now() - duration_ms;
                         await completeRequestLog(
                             supabaseAdmin,
                             logId,
                             'SUCCESS',
                             200,
-                            result
+                            result,
+                            duration_ms
                         );
                     }
 

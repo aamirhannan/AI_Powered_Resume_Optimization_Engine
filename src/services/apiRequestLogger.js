@@ -92,6 +92,7 @@ export const logStep = async (supabase, logId, stepName, status, details = {}) =
  * @param {number} statusCode - HTTP status code.
  * @param {Object} responsePayload - The response data sent to the user.
  * @param {string} errorMessage - Error message if failed.
+ * @param {number} duration_ms - Duration in milliseconds.
  */
 export const completeRequestLog = async (
     supabase,
@@ -99,7 +100,8 @@ export const completeRequestLog = async (
     status,
     statusCode,
     responsePayload,
-    errorMessage = null
+    duration_ms = 0,
+    errorMessage = null,
 ) => {
     if (!logId) return;
 
@@ -108,6 +110,7 @@ export const completeRequestLog = async (
             status,
             status_code: statusCode,
             response_payload: responsePayload,
+            duration_ms,
             updated_at: new Date().toISOString()
         };
 
