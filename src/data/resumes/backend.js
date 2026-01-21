@@ -6,9 +6,9 @@ export const backend = {
             "location": "Bangalore, India",
             "email": "aamirhannansde@gmail.com",
             "links": {
-                "linkedin": "LinkedIn",
-                "leetcode": "LeetCode",
-                "github": "GitHub"
+                "linkedin": "https://www.linkedin.com/in/aamirhannan/",
+                "leetcode": "https://leetcode.com/u/aamir_hannan/",
+                "github": "https://github.com/aamirhannan"
             }
         }
     },
@@ -97,9 +97,24 @@ export const backend = {
     ],
     "projects": [
         {
+            "title": "AI-Powered Resume Optimization Engine",
+            "links": {
+                "live": "https://github.com/aamirhannan/AI_Powered_Resume_Optimization_Engine"
+            },
+            "description": [
+                "Architected a modular pipeline system using Design Patterns to orchestrate multi-stage LLM processing (Rewrite → Analyze → Refine), improving resume-job alignment by 40%",
+                "Engineered Chain-of-Thought prompting strategies for OpenAI API, implementing recursive self-correction that preserved 100% of original facts while optimizing for ATS",
+                "Built PDF generation service with Puppeteer and EJS, reducing manual formatting time from 30 minutes to 2 minutes per resume",
+                "Developed REST API processing 100+ resumes with 99.5% success rate, featuring retry mechanisms and validation layers"
+            ],
+            "technologyStack": [
+                "React.js", "Node.js", "Express.js", "OpenAI GPT-4", "Puppeteer", "Design Patterns", "REST API", "Prompt Engineering"
+            ]
+        },
+        {
             "title": "E-Commerce Platform with Microservices Architecture",
             "links": {
-                "live": "Live Link"
+                "live": "https://github.com/aamirhannan/e-comm-application"
             },
             "description": [
                 "Built a scalable e-commerce platform using React.js for the frontend and Node.js-based microservices for backend operations.",
