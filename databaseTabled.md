@@ -152,7 +152,56 @@ create table public.api_request_logs (
 );
 
 -- -----------------------------------------------------------------------------
--- 8. SECURITY POLICIES (Row Level Security)
+-- 8. JOB PROFILES (Hybrid Storage for Resume Data)
+-- Stores user's resume/profile data with a hybrid approach:
+-- - Flat fields for frequently accessed data (name, contact info, summary)
+-- - JSONB for complex nested structures (skills, experience, projects)
+-- -----------------------------------------------------------------------------
+create table public.job_profiles (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  
+  -- Profile identifier (e.g., 'fullstack', 'frontend', 'backend', 'data_engineer')
+  profile_type text not null,
+  
+  -- Flat fields (frequently queried/updated)
+  full_name varchar(255),
+  email varchar(255),
+  phone varchar(50),
+  location varchar(255),
+  professional_summary text,
+  
+  -- Semi-structured sections as JSONB
+  links jsonb default '{}'::jsonb,
+  -- Structure: {"linkedin": "url", "github": "url", "leetcode": "url", ...}
+  
+  education jsonb default '{}'::jsonb,
+  -- Structure: {"degree": "...", "institution": "...", "duration": {"start": "...", "end": "..."}}
+  
+  technical_skills jsonb default '{}'::jsonb,
+  -- Structure: {"programmingLanguages": [...], "frontend": [...], "backend": [...], ...}
+  
+  experience jsonb default '[]'::jsonb,
+  -- Structure: [{"role": "...", "company": "...", "duration": {...}, "responsibilitiesAndAchievements": [...], "technologies": [...]}]
+  
+  projects jsonb default '[]'::jsonb,
+  -- Structure: [{"title": "...", "links": {...}, "description": [...], "technologyStack": [...]}]
+  
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  
+  -- Prevent duplicate profile types for the same user
+  unique(user_id, profile_type)
+);
+
+-- GIN index for skill-based searches
+create index idx_job_profiles_skills on public.job_profiles using gin (technical_skills);
+
+-- Index for quick user lookups
+create index idx_job_profiles_user_id on public.job_profiles(user_id);
+
+-- -----------------------------------------------------------------------------
+-- 9. SECURITY POLICIES (Row Level Security)
 -- Ensures users can only see their own data.
 -- -----------------------------------------------------------------------------
 
@@ -163,6 +212,7 @@ alter table public.email_automations enable row level security;
 alter table public.founder_outreaches enable row level security;
 alter table public.resume_generations enable row level security;
 alter table public.api_request_logs enable row level security;
+alter table public.job_profiles enable row level security;
 
 -- Create policy for user_settings
 create policy "Users can own settings" on public.user_settings
@@ -185,6 +235,11 @@ create policy "Users manage own resume generations" on public.resume_generations
   using (auth.uid() = user_id);
   
 create policy "Users manage own api logs" on public.api_request_logs
+  for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create policy "Users manage own job profiles" on public.job_profiles
   for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
