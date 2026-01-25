@@ -20,6 +20,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 import { authMiddleware } from './middleware/authMiddleware.js';
+import { userAuthMiddleware } from './middleware/userAuthMiddleware.js';
 
 // Connect to MongoDB
 // connectDB();
@@ -30,7 +31,7 @@ app.use(bodyParser.json());
 
 // Routes
 app.use('/api', resumeRoutes);
-app.use('/api/v1', authMiddleware, routes);
+app.use('/api/v1', authMiddleware, userAuthMiddleware, routes);
 
 // Health check
 app.get('/health', (req, res) => {

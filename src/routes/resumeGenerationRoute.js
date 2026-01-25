@@ -1,10 +1,11 @@
 import express from 'express';
 import { getResumeGeneration, createResumeGeneration, updateResumeGeneration, generateResumePdf } from '../controllers/resumeGenerationController.js';
+import { verifyUserAuthMiddlewawre } from '../middleware/verifyUserAuthMiddlewawre.js';
 
 const router = express.Router();
 
 router.get('/get-resume', getResumeGeneration);
-router.post('/create-resume', createResumeGeneration);
+router.post('/create-resume', verifyUserAuthMiddlewawre, createResumeGeneration);
 router.post('/update-resume', updateResumeGeneration);
 router.post('/download-resume-pdf', generateResumePdf);
 

@@ -32,8 +32,8 @@ export const createEmailAutomation = async (req, res) => {
         // 1. Start Logging
         logId = await createRequestLog(supabase, req.user.id, 'EMAIL_AUTOMATION', '/create-email', payload, company, role);
 
-        const senderEmail = req.headers['x-smtp-email'];
-        const appPassword = req.headers['x-smtp-password'];
+        const senderEmail = req.user.userEmailString;
+        const appPassword = req.user.appPasswordString;
         const encryptedPassword = encrypt(appPassword);
 
         // Check for duplicates
