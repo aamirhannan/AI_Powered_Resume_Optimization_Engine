@@ -5,7 +5,8 @@ import * as dbController from '../DatabaseController/dashboardDatabaseController
 export const getDashboardMetrics = async (req, res) => {
     try {
         const supabase = getAuthenticatedClient(req.accessToken);
-        const metrics = await dbController.fetchDashboardMetrics(supabase);
+        const { startDate, endDate } = req.query;
+        const metrics = await dbController.fetchDashboardMetrics(supabase, { startDate, endDate });
         res.status(200).json(metrics);
     } catch (error) {
         console.error('getDashboardMetrics error:', error);
@@ -16,7 +17,8 @@ export const getDashboardMetrics = async (req, res) => {
 export const getDashboardRoleDistribution = async (req, res) => {
     try {
         const supabase = getAuthenticatedClient(req.accessToken);
-        const distribution = await dbController.fetchDashboardRoleDistribution(supabase);
+        const { startDate, endDate } = req.query;
+        const distribution = await dbController.fetchDashboardRoleDistribution(supabase, { startDate, endDate });
         res.status(200).json(distribution);
     } catch (error) {
         console.error('getDashboardRoleDistribution error:', error);
@@ -27,7 +29,9 @@ export const getDashboardRoleDistribution = async (req, res) => {
 export const getDashboardDailyVelocity = async (req, res) => {
     try {
         const supabase = getAuthenticatedClient(req.accessToken);
-        const velocity = await dbController.fetchDashboardDailyVelocity(supabase);
+        const { startDate, endDate } = req.query;
+        const velocity = await dbController.fetchDashboardDailyVelocity(supabase, { startDate, endDate });
+        // console.log("velocity", velocity);
         res.status(200).json(velocity);
     } catch (error) {
         console.error('getDashboardDailyVelocity error:', error);
@@ -38,7 +42,8 @@ export const getDashboardDailyVelocity = async (req, res) => {
 export const getDashboardHeatmap = async (req, res) => {
     try {
         const supabase = getAuthenticatedClient(req.accessToken);
-        const heatmap = await dbController.fetchDashboardHeatmap(supabase);
+        const { startDate, endDate } = req.query;
+        const heatmap = await dbController.fetchDashboardHeatmap(supabase, { startDate, endDate });
         res.status(200).json(heatmap);
     } catch (error) {
         console.error('getDashboardHeatmap error:', error);
@@ -60,8 +65,8 @@ export const getDashboardRecentActivity = async (req, res) => {
 export const getApiLogs = async (req, res) => {
     try {
         const supabase = getAuthenticatedClient(req.accessToken);
-        const { type, limit } = req.query;
-        const logs = await dbController.fetchApiLogs(supabase, { type, limit });
+        const { type, limit, startDate, endDate } = req.query;
+        const logs = await dbController.fetchApiLogs(supabase, { type, limit, startDate, endDate });
         res.status(200).json(logs);
     } catch (error) {
         console.error('getApiLogs error:', error);
