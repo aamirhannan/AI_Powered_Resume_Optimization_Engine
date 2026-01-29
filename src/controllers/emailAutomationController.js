@@ -1,12 +1,15 @@
 
 import { getAuthenticatedClient } from '../utils/supabaseClientHelper.js';
 import * as dbController from '../DatabaseController/emailAutomationDatabaseController.js';
+import * as jobProfileDbController from '../DatabaseController/jobProfileDatabaseController.js';
 import { camelToSnake, snakeToCamel } from './utils.js';
 import { encrypt } from '../utils/crypto.js';
 import { createRequestLog, completeRequestLog, logStep } from '../services/apiRequestLogger.js';
+import { transformToApiFormat } from './jobProfileController.js';
 
 import { sendMessageToQueue } from '../services/sqsService.js';
 import { getCompanyFromEmail } from '../utils/utilFunctions.js';
+
 
 export const getEmailAutomation = async (req, res) => {
     try {
@@ -27,7 +30,13 @@ export const createEmailAutomation = async (req, res) => {
         const payload = camelToSnake(req.body);
 
         const company = getCompanyFromEmail(payload["target_email"]);
-        const role = payload["role"];
+        const baseResumeId = payload["role"];
+        const baseResumeData = await jobProfileDbController.fetchJobProfileById(supabase, baseResumeId);
+        const role = baseResumeData["profile_type"];
+
+        // Transform from flat DB format to nested resume format expected by EJS template
+        const baseResumeCamel = snakeToCamel(baseResumeData);
+        const baseResume = transformToApiFormat(baseResumeCamel);
 
         // 1. Start Logging
         logId = await createRequestLog(supabase, req.user.id, 'EMAIL_AUTOMATION', '/create-email', payload, company, role);
@@ -48,6 +57,8 @@ export const createEmailAutomation = async (req, res) => {
 
         const data = await dbController.insertEmailAutomation(supabase, payload, req.user.id);
 
+
+
         // Push the task into SQS queue
         const task = {
             id: data.id,
@@ -55,7 +66,8 @@ export const createEmailAutomation = async (req, res) => {
             encryptedPassword,
             logId,
             company,
-            role
+            role,
+            baseResume
         };
 
         await sendMessageToQueue(task);

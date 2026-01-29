@@ -89,11 +89,11 @@ export const processApplication = async (req, res) => {
 // Worker Function: Executes the actual logic
 // Worker Function: Executes the actual logic
 export const executeApplicationPipeline = async (applicationData) => {
-    const { role, jobDescription, targetEmail, senderEmail, appPassword, logId, supabase } = applicationData;
+    const { role, jobDescription, targetEmail, senderEmail, appPassword, logId, supabase, baseResume } = applicationData;
 
     console.log(`--- Starting Pipeline for Job (Role: ${role}) ---`);
 
-    const baseResume = getResumeByRole(role);
+    // const baseResume = getResumeByRole(role);
 
     // Define Pipeline
     const pipeline = new Pipeline()

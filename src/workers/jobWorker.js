@@ -27,7 +27,7 @@ export const startWorker = async () => {
                 const { Body, ReceiptHandle } = message;
 
                 try {
-                    const { id, encryptedPassword, senderEmail, logId, company, role } = JSON.parse(Body);
+                    const { id, encryptedPassword, senderEmail, logId, company, role, baseResume } = JSON.parse(Body);
 
                     let duration_ms = Date.now();
 
@@ -119,7 +119,8 @@ export const startWorker = async () => {
                         senderEmail: senderEmail,
                         appPassword: appPassword,
                         logId: logId,
-                        supabase: supabaseAdmin
+                        supabase: supabaseAdmin,
+                        baseResume: baseResume
                     });
 
                     if (logId) {

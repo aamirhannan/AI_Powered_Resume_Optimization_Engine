@@ -146,7 +146,7 @@ export const fetchDashboardDailyVelocity = async (client, { startDate, endDate }
         }
         velocityMap[date][role] = (velocityMap[date][role] || 0) + 1;
     });
-    
+
     return Object.values(velocityMap).sort((a, b) => a.date.localeCompare(b.date));
 };
 
@@ -184,8 +184,8 @@ export const fetchDashboardRecentActivity = async (client) => {
 
     return logs.map(log => ({
         id: log.id,
-        company: log.request_payload?.company_name || log.request_payload?.company || 'Unknown Company',
-        role: log.request_payload?.role || 'Unknown Role',
+        company: log?.company || 'NA',
+        role: log?.role || 'NA',
         date: log.created_at,
         status: log.status,
         type: log.type

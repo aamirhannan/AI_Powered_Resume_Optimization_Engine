@@ -8,6 +8,7 @@ import userSettingRoutes from "./userSettingRoutes.js";
 import dashboardRoutes from "./dashboardRoutes.js";
 import apiRequestLogRoutes from "./apiRequestLogRoutes.js";
 import jobProfileRoutes from "./jobProfileRoutes.js";
+import resumeParserRoutes from "./resumeParserRoutes.js";
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use("/user-setting", userSettingRoutes);
 router.use("/dashboard", dashboardRoutes);
 router.use("/api-request-logs", apiRequestLogRoutes);
 router.use("/job-profile", jobProfileRoutes);
+router.use("/resume-parser", resumeParserRoutes);
 
 export default router;
