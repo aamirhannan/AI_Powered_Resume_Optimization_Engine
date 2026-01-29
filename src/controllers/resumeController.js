@@ -76,17 +76,6 @@ export const generateResumePDF = async (req, res) => {
         // const pdfBuffer = await createPDF(result.finalResume);
         const evidenceBasedResume = await createPDF(result.evidenceBasedRefinementResult);
 
-        // Save locally for debugging/verification
-        // fs.writeFileSync(`Resume_${role || 'Optimized'}.pdf`, pdfBuffer);
-        // fs.writeFileSync(`Resume_${role || 'Optimized'}_EvidenceBased.pdf`, evidenceBasedResume);
-
-        // Create Zip
-        // const zip = new AdmZip();
-        // zip.addFile(`Resume_${role || 'Optimized'}.pdf`, pdfBuffer);
-        // zip.addFile(`Resume_${role || 'Optimized'}_EvidenceBased.pdf`, evidenceBasedResume);
-
-        // const zipBuffer = zip.toBuffer();
-
         res.set({
             'Content-Type': 'application/pdf',
             'Content-Length': evidenceBasedResume.length,

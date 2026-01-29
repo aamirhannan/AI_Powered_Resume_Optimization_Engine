@@ -1,20 +1,20 @@
-import { getResumeByRole } from '#services/resumeLoader.js';
-import { Pipeline } from '#pipeline/Pipeline.js';
-import { RewriteResumeViaLLM } from '#pipeline/steps/recrute-outreach-via-email/RewriteResumeViaLLM.js';
-import { CriticalAnalysis } from '#pipeline/steps/recrute-outreach-via-email/CriticalAnalysis.js';
-import { EvidenceBasedRefinement } from '#pipeline/steps/recrute-outreach-via-email/EvidenceBasedRefinement.js';
-import { InsertNewlyCreatedResumePoints } from '#pipeline/steps/recrute-outreach-via-email/InsertNewlyCreatedResumePoints.js';
-import { GeneratePDFStep } from '#pipeline/steps/common-steps/GeneratePDFStep.js';
-import { GenerateCoverLetter } from '#pipeline/steps/common-steps/GenerateCoverLetter.js';
-import { GenerateSubjectLine } from '#pipeline/steps/common-steps/GenerateSubjectLine.js';
-import { SendApplicationEmail } from '#pipeline/steps/common-steps/SendApplicationEmail.js';
-import { CleanupFiles } from '#pipeline/steps/common-steps/CleanupFiles.js';
-import Application from '#models/Application.js';
+import { getResumeByRole } from '../services/resumeLoader.js';
+import { Pipeline } from '../pipeline/Pipeline.js';
+import { RewriteResumeViaLLM } from '../pipeline/steps/recrute-outreach-via-email/RewriteResumeViaLLM.js';
+import { CriticalAnalysis } from '../pipeline/steps/recrute-outreach-via-email/CriticalAnalysis.js';
+import { EvidenceBasedRefinement } from '../pipeline/steps/recrute-outreach-via-email/EvidenceBasedRefinement.js';
+import { InsertNewlyCreatedResumePoints } from '../pipeline/steps/recrute-outreach-via-email/InsertNewlyCreatedResumePoints.js';
+import { GeneratePDFStep } from '../pipeline/steps/common-steps/GeneratePDFStep.js';
+import { GenerateCoverLetter } from '../pipeline/steps/common-steps/GenerateCoverLetter.js';
+import { GenerateSubjectLine } from '../pipeline/steps/common-steps/GenerateSubjectLine.js';
+import { SendApplicationEmail } from '../pipeline/steps/common-steps/SendApplicationEmail.js';
+import { CleanupFiles } from '../pipeline/steps/common-steps/CleanupFiles.js';
+import Application from '../models/Application.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { sendMessageToQueue } from '#services/sqsService.js';
-import { encrypt } from '#utils/crypto.js';
+import { sendMessageToQueue } from '../services/sqsService.js';
+import { encrypt } from '../utils/crypto.js';
 
 // API Handler: Enqueues the job to SQS
 // API Handler: Enqueues the job to SQS
@@ -89,7 +89,7 @@ export const processApplication = async (req, res) => {
 // Worker Function: Executes the actual logic
 // Worker Function: Executes the actual logic
 export const executeApplicationPipeline = async (applicationData) => {
-    const { role, jobDescription, targetEmail, senderEmail, appPassword } = applicationData;
+    const { role, jobDescription, targetEmail, senderEmail, appPassword, logId, supabase } = applicationData;
 
     console.log(`--- Starting Pipeline for Job (Role: ${role}) ---`);
 
@@ -124,6 +124,9 @@ export const executeApplicationPipeline = async (applicationData) => {
         email: senderEmail, // 'email' key in context refers to Sender (User) for Nodemailer
         role,
         tokenUsage: { input: 0, output: 0, total: 0, cost: 0 }
+    }, {
+        supabase: supabase,
+        logId: logId
     });
 
     console.log('--- Pipeline Completed Successfully ---');

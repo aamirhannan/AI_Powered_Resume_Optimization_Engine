@@ -1,4 +1,4 @@
-import { Step } from "#pipeline/Step.js";
+import { Step } from "../../Step.js";
 
 export class InsertNewlyCreatedResumePoints extends Step {
     constructor() {

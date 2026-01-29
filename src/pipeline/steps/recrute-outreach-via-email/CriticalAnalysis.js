@@ -1,6 +1,6 @@
-import { GenerateCriticalAnalysisPrompt } from "#prompts/userPrompt.js";
-import { llmService } from "#services/llmService.js";
-import { Step } from "#pipeline/Step.js";
+import { GenerateCriticalAnalysisPrompt } from "../../../prompts/userPrompt.js";
+import { llmService } from "../../../services/llmService.js";
+import { Step } from "../../Step.js";
 
 export class CriticalAnalysis extends Step {
     constructor() {

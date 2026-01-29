@@ -1,6 +1,6 @@
 import express from 'express';
-import { generateResume, generateResumePDF } from '#controllers/resumeController.js';
-import { processApplication, retryFailedApplications } from '#controllers/applicationController.js';
+import { generateResume, generateResumePDF } from '../controllers/resumeController.js';
+import { processApplication, retryFailedApplications } from '../controllers/applicationController.js';
 
 const router = express.Router();
 
