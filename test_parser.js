@@ -33,7 +33,7 @@ async function test() {
         const convertRes = await axios.post(`${API_URL}/convert`, { text });
 
         console.log('   Conversion successful!');
-        console.log('   Profile JSON:', JSON.stringify(convertRes.data, null, 2));
+        // console.log('   Profile JSON:', JSON.stringify(convertRes.data, null, 2));
 
     } catch (error) {
         console.error('Test failed:');

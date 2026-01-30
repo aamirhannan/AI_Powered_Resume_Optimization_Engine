@@ -39,13 +39,13 @@ const testApplication = async () => {
             appPassword: appPassword
         };
 
-        console.log('Sending request with payload:', {
-            role: requestBody.role,
-            targetEmail: requestBody.targetEmail,
-            senderEmail: requestBody.senderEmail,
-            appPassword: requestBody.appPassword ? '****** (HIDDEN)' : 'MISSING',
-            jdPreview: requestBody.jobDescription.substring(0, 50) + '...'
-        });
+        // console.log('Sending request with payload:', {
+        //     role: requestBody.role,
+        //     targetEmail: requestBody.targetEmail,
+        //     senderEmail: requestBody.senderEmail,
+        //     appPassword: requestBody.appPassword ? '****** (HIDDEN)' : 'MISSING',
+        //     jdPreview: requestBody.jobDescription.substring(0, 50) + '...'
+        // });
 
         const startTime = Date.now();
         const response = await axios.post(API_URL, requestBody);
@@ -53,7 +53,7 @@ const testApplication = async () => {
 
         console.log(`\n✅ Success! (took ${duration.toFixed(2)}s)`);
         console.log('Response Status:', response.status);
-        console.log('Response Data:', JSON.stringify(response.data, null, 2));
+        // console.log('Response Data:', JSON.stringify(response.data, null, 2));
 
     } catch (error) {
         console.error('\n❌ Request Failed!');

@@ -110,7 +110,7 @@ export const startWorker = async () => {
 
                     console.log('--- Debug: Preparing Pipeline ---');
                     console.log('Role:', jobDetails.role);
-                    console.log('Target Email:', jobDetails.targetEmail);
+                    // console.log('Target Email:', jobDetails.targetEmail);
 
                     const result = await executeApplicationPipeline({
                         role: jobDetails.role,

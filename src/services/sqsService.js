@@ -20,8 +20,8 @@ const QUEUE_URL = process.env.SQS_QUEUE_URL;
 
 // DEBUG LOGS
 console.log('--- SQS Service Initialized ---');
-console.log('Region:', process.env.AWS_REGION || 'us-east-1 (DEFAULT)');
-console.log('Queue URL:', QUEUE_URL);
+// console.log('Region:', process.env.AWS_REGION || 'us-east-1 (DEFAULT)');
+// console.log('Queue URL:', QUEUE_URL);
 console.log('-------------------------------');
 
 export const sendMessageToQueue = async (body) => {

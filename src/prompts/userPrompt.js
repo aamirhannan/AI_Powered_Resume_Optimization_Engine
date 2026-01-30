@@ -934,8 +934,8 @@ export const executeResumeOptimization = async (resume, jobDescription) => {
     // Log the outcome
     console.log(`Optimization complete. Refinement applied: ${result.refinementApplied}`);
     if (result.analysis) {
-      console.log(`Fit score: ${result.analysis.overallFitScore}/10`);
-      console.log(`Required changes: ${result.analysis.requiredChanges?.length || 0}`);
+      // console.log(`Fit score: ${result.analysis.overallFitScore}/10`);
+      // console.log(`Required changes: ${result.analysis.requiredChanges?.length || 0}`);
     }
 
     return result;

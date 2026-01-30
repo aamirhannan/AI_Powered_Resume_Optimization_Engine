@@ -39,7 +39,7 @@ const testRetry = async () => {
 
         console.log(`\n✅ Success! (took ${duration.toFixed(2)}s)`);
         console.log('Response Status:', response.status);
-        console.log('Response Data:', JSON.stringify(response.data, null, 2));
+        // console.log('Response Data:', JSON.stringify(response.data, null, 2));
 
     } catch (error) {
         console.error('\n❌ Request Failed!');
