@@ -4,6 +4,7 @@ const require = createRequire(import.meta.url);
 const { PDFParse } = require('pdf-parse');
 import { llmService } from '../services/llmService.js';
 import fs from 'fs';
+import { geminiService } from '../services/geminiService.js';
 
 /**
  * Extracts text from an uploaded PDF file.
@@ -54,7 +55,8 @@ export const convertTextToProfile = async (req, res) => {
             return res.status(400).json({ error: 'No text provided' });
         }
 
-        const structuredProfile = await llmService.parseResumeToProfile(text);
+        // const structuredProfile = await llmService.parseResumeToProfile(text);
+        const structuredProfile = await geminiService.parseResumeToProfile(text);
 
         if (!structuredProfile) {
             return res.status(500).json({ error: 'Failed to convert text to profile' });
