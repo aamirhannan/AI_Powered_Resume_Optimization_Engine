@@ -18,5 +18,5 @@ export const PLANS = {
 export const PLAN_PRICES = {
     TRIAL_TIER: 0,
     PRO_TIER: 499000,
-    PREMIUM_TIER: 999000
+    PREMIUM_TIER: 99900
 };
