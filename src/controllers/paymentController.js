@@ -4,18 +4,31 @@ import { getAuthenticatedClient } from '../utils/supabaseClientHelper.js';
 import * as dbController from '../DatabaseController/paymentDatabaseController.js';
 import { camelToSnake, snakeToCamel } from './utils.js';
 
-const ONE_MONTH_PLAN_AMOUNT = 49900; // Amount in smallest currency unit (e.g., 499.00 INR)
+const PLAN_PRICES = {
+    PRO_TIER: 49900, // 499 INR
+    PREMIUM_TIER: 99900 // 999 INR
+};
 
 export const createOrder = async (req, res) => {
     try {
         const userId = req.user.id;
         const supabase = getAuthenticatedClient(req.accessToken);
+        const { planType } = req.body;
+
+        if (!planType || !PLAN_PRICES[planType]) {
+            return res.status(400).json({ success: false, error: "Invalid plan type. Must be PRO_TIER or PREMIUM_TIER" });
+        }
+
+        const amount = PLAN_PRICES[planType];
 
         const options = {
-            amount: ONE_MONTH_PLAN_AMOUNT,
+            amount: amount,
             currency: "INR",
             receipt: `receipt_${Date.now().toString().slice(-8)}`,
-            payment_capture: 1
+            payment_capture: 1,
+            notes: {
+                payment_type: planType // Pass plan info to notes for reference
+            }
         };
 
         const order = await razorpayInstance.orders.create(options);
@@ -31,7 +44,8 @@ export const createOrder = async (req, res) => {
             amount: order.amount,
             currency: order.currency,
             status: 'created',
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            plan_tier: planType // Pass the selected plan type to DB controller
         };
 
         await dbController.createPaymentRecord(supabase, paymentRecord);
@@ -41,7 +55,9 @@ export const createOrder = async (req, res) => {
             order_id: order.id,
             amount: order.amount,
             currency: order.currency,
-            key_id: process.env.RAZORPAY_KEY_ID
+            key_id: process.env.RAZORPAY_KEY_ID,
+            product_name: planType === 'PRO_TIER' ? 'Pro Plan' : 'Premium Plan',
+            description: '1 Month Subscription'
         });
 
     } catch (error) {
@@ -120,6 +136,43 @@ export const verifyPayment = async (req, res) => {
 
     } catch (error) {
         console.error("Verify Payment Error:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+export const getPurchaseHistory = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const supabase = getAuthenticatedClient(req.accessToken);
+
+        // 1. Get Purchase History
+        const history = await dbController.getUserPurchases(supabase, userId);
+
+        // 2. Determine Current Plan
+        const latestExpiry = await dbController.getLatestUserExpiry(supabase, userId);
+
+        let currentPlan = {
+            tier: 'Free', // Default
+            expiresAt: null,
+            isActive: false
+        };
+
+        if (latestExpiry && new Date(latestExpiry) > new Date()) {
+            currentPlan = {
+                tier: 'Pro', // Assuming only Pro exists for now based on code
+                expiresAt: latestExpiry,
+                isActive: true
+            };
+        }
+
+        res.status(200).json({
+            success: true,
+            currentPlan,
+            history
+        });
+
+    } catch (error) {
+        console.error("Get Purchase History Error:", error);
         res.status(500).json({ success: false, error: error.message });
     }
 };

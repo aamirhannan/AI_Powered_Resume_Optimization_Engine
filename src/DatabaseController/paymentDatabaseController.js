@@ -71,3 +71,14 @@ export const updatePaymentStatus = async (client, orderId, updateData, newValidU
     if (error) throw error;
     return data;
 };
+
+export const getUserPurchases = async (client, userId) => {
+    const { data, error } = await client
+        .from('user_purchases')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+};

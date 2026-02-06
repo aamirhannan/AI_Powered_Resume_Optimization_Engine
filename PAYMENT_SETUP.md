@@ -49,6 +49,12 @@ alter table public.user_purchases enable row level security;
 create policy "Users view own purchases" on public.user_purchases
   for select using (auth.uid() = user_id);
 
+create policy "Users insert own purchases" on public.user_purchases
+  for insert with check (auth.uid() = user_id);
+
+create policy "Users update own purchases" on public.user_purchases
+  for update using (auth.uid() = user_id);
+
 -- NOTE: We are NOT touching 'user_settings'.
 ```
 
