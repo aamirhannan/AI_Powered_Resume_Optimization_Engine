@@ -31,6 +31,7 @@
     "openai": "^6.15.0",
     "pdf-parse": "^2.4.5",
     "puppeteer": "^24.34.0",
+    "razorpay": "^2.9.6",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

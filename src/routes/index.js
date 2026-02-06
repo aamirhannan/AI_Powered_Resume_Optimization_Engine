@@ -9,6 +9,7 @@ import dashboardRoutes from "./dashboardRoutes.js";
 import apiRequestLogRoutes from "./apiRequestLogRoutes.js";
 import jobProfileRoutes from "./jobProfileRoutes.js";
 import resumeParserRoutes from "./resumeParserRoutes.js";
+import paymentRoutes from "./paymentRoutes.js";
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.use("/dashboard", dashboardRoutes);
 router.use("/api-request-logs", apiRequestLogRoutes);
 router.use("/job-profile", jobProfileRoutes);
 router.use("/resume-parser", resumeParserRoutes);
+router.use("/payment", paymentRoutes);
 
 export default router;
