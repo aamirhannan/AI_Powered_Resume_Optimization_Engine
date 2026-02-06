@@ -2,6 +2,12 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dns from 'dns';
+
+// Force IPv4 to avoid IPv6 connection issues in some cloud environments (like Render)
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,7 +36,10 @@ class EmailService {
             host: 'smtp.gmail.com',
             port: 465,
             secure: true, // Use SSL
-            auth: { user, pass }
+            auth: { user, pass },
+            connectionTimeout: 10000, // 10 seconds
+            greetingTimeout: 10000,
+            socketTimeout: 10000
         });
 
         return this._send(tempTransporter, { from: user, to, subject, text, html, attachments });
@@ -42,7 +51,10 @@ class EmailService {
                 host: 'smtp.gmail.com',
                 port: 465,
                 secure: true, // Use SSL
-                auth: { user, pass }
+                auth: { user, pass },
+                connectionTimeout: 10000, // 10 seconds
+                greetingTimeout: 10000,
+                socketTimeout: 10000
             });
             await tempTransporter.verify();
             return true;
