@@ -24,7 +24,9 @@ class GeminiService {
 
 
     async parseResumeToProfile(resumeText) {
-        if (!this.genAI) return null;
+        if (!this.genAI) {
+            throw new Error("GEMINI_API_KEY is not configured.");
+        }
 
         const model = this.genAI.getGenerativeModel({
             model: this.modelName,
@@ -128,7 +130,7 @@ Return the structured JSON:
             return JSON.parse(text);
         } catch (error) {
             console.error('Gemini Parsing Error:', error);
-            return null;
+            throw error;
         }
     }
 }
