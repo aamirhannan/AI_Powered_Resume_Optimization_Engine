@@ -33,6 +33,7 @@ export const userAuthMiddleware = async (req, res, next) => {
         const blockedDomains = header['x-blocked-domains'];
         const blockedEmails = header['x-blocked-emails'];
         const dailyLimit = header['x-daily-limit'];
+        const userEmailString = header['x-user-email'];
 
         const blockedDomainsArray = blockedDomains ? JSON.parse(blockedDomains) : [];
         const blockedEmailsArray = blockedEmails ? JSON.parse(blockedEmails) : [];
@@ -43,6 +44,7 @@ export const userAuthMiddleware = async (req, res, next) => {
         req.user.blockedEmailsArray = blockedEmailsArray;
         req.user.dailyLimitNumber = dailyLimitNumber;
         req.user.planTier = planTierString;
+        req.user.userEmailString = userEmailString;
 
         next();
     } catch (error) {
