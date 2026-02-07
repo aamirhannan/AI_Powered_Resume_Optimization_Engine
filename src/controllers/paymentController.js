@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import razorpayInstance from '../config/razorpay.js';
 import { getAuthenticatedClient } from '../utils/supabaseClientHelper.js';
 import * as dbController from '../DatabaseController/paymentDatabaseController.js';
+import { countEmailsInTimeFrame } from '../DatabaseController/emailAutomationDatabaseController.js';
+import { countGeneratedResumesInTimeFrame } from '../DatabaseController/generatedResumeDatabaseController.js';
 import { camelToSnake, snakeToCamel } from './utils.js';
 import { PLAN_PRICES, PLANS } from '../utils/utilFunctions.js';
 
@@ -145,19 +147,39 @@ export const getPurchaseHistory = async (req, res) => {
         const history = await dbController.getUserPurchases(supabase, userId);
 
         // 2. Determine Current Plan
-        const latestExpiry = await dbController.getLatestUserExpiry(supabase, userId);
+        const activeSub = await dbController.getActiveSubscription(supabase, userId);
+
+        // 3. Determine Usage Window Start Time
+        let startTime = new Date();
+        const planTier = activeSub ? (activeSub.plan_tier || PLANS.PRO_TIER) : PLANS.TRIAL_TIER;
+
+        if (planTier === PLANS.TRIAL_TIER) {
+            // Rolling 30 Days window
+            startTime.setDate(startTime.getDate() - 30);
+        } else {
+            // Rigid Day Window: Resets at 00:00 UTC today for PRO/PREMIUM
+            startTime.setUTCHours(0, 0, 0, 0);
+        }
+
+        // 4. Get User Usage Counts
+        const emailSentCount = await countEmailsInTimeFrame(supabase, userId, startTime);
+        const resumeGeneratedCount = await countGeneratedResumesInTimeFrame(supabase, userId, startTime);
 
         let currentPlan = {
-            tier: 'Free', // Default
+            tier: PLANS.TRIAL_TIER, // Default to TRIAL_TIER instead of 'Free'
             expiresAt: null,
-            isActive: false
+            isActive: false,
+            emailSent: emailSentCount,
+            resumeGenerated: resumeGeneratedCount
         };
 
-        if (latestExpiry && new Date(latestExpiry) > new Date()) {
+        if (activeSub) {
             currentPlan = {
-                tier: 'Pro', // Assuming only Pro exists for now based on code
-                expiresAt: latestExpiry,
-                isActive: true
+                tier: activeSub.plan_tier || PLANS.PRO_TIER, // Fallback to PRO if undefined, though it should be there
+                expiresAt: activeSub.valid_until,
+                isActive: true,
+                emailSent: emailSentCount,
+                resumeGenerated: resumeGeneratedCount
             };
         }
 

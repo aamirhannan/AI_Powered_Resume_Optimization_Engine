@@ -3,7 +3,7 @@ export const createPaymentRecord = async (client, paymentData) => {
     // Mapping internal payment record to 'user_purchases' schema
     const purchaseData = {
         user_id: paymentData.user_id,
-        plan_tier: 'PRO_TIER',
+        plan_tier: paymentData.plan_tier,
         amount: paymentData.amount / 100, // Convert paise to major unit
         currency: paymentData.currency,
         payment_provider: 'razorpay',
@@ -48,6 +48,21 @@ export const getLatestUserExpiry = async (client, userId) => {
     return data?.valid_until; // Returns a Date string or undefined
 };
 
+export const getActiveSubscription = async (client, userId) => {
+    const { data, error } = await client
+        .from('user_purchases')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'SUCCESS')
+        .gt('valid_until', new Date().toISOString())
+        .order('valid_until', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data;
+};
+
 export const updatePaymentStatus = async (client, orderId, updateData, newValidUntil) => {
     const purchaseUpdate = {
         status: updateData.status.toUpperCase(),
@@ -90,14 +105,14 @@ export const markPurchaseAsRefunded = async (client, paymentId) => {
         .select('*')
         .eq('transaction_id', paymentId)
         .single();
-    
+
     if (findError) throw findError;
     if (!purchase) return null;
 
     const { data, error } = await client
         .from('user_purchases')
         .update({
-            status: 'REFUNDED', 
+            status: 'REFUNDED',
             valid_until: new Date().toISOString(), // Expire immediately
             updated_at: new Date().toISOString()
         })
@@ -108,3 +123,5 @@ export const markPurchaseAsRefunded = async (client, paymentId) => {
     if (error) throw error;
     return data;
 };
+
+// how much user has used

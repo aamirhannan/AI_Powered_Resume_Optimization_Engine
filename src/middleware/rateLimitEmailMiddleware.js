@@ -8,7 +8,7 @@ export const rateLimitEmailMiddleware = async (req, res, next) => {
         const { planTier, id: userId } = req.user;
         const supabase = getAuthenticatedClient(req.accessToken);
 
-        let limit = PLAN_EMAIL_LIMITS.TRIAL_TIER; // Default TRIAL
+        let limit = PLAN_EMAIL_LIMITS.TRIAL_TIER;
         let startTime = new Date();
 
         // 1. Determine Limits based on Plan
