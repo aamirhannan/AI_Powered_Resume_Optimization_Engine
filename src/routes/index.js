@@ -25,4 +25,5 @@ router.use("/job-profile", jobProfileRoutes);
 router.use("/resume-parser", resumeParserRoutes);
 router.use("/payment", paymentRoutes);
 
+
 export default router;
