@@ -10,21 +10,9 @@ create table public.user_settings (
   workspace_id uuid default gen_random_uuid() not null,
   blocked_emails text[] default array[]::text[],
   blocked_domains text[] default array[]::text[],
-  daily_limit int default 50,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
-
--- -----------------------------------------------------------------------------
--- UPDATE 1. USER SETTINGS
--- Add Plan information for fast lookup during authentication/middleware
--- -----------------------------------------------------------------------------
--- alter table public.user_settings 
--- add column if not exists plan_tier text check (plan_tier in ('TRIAL_TIER', 'PRO_TIER', 'PREMIUM_TIER')) default 'TRIAL_TIER',
--- add column if not exists plan_start_date timestamptz default now(),
--- add column if not exists plan_expiry_date timestamptz,
--- add column if not exists is_active boolean default true;
--- -----------------------------------------------------------------------------
 
 -- -----------------------------------------------------------------------------
 -- 10. USER PURCHASES (New Table)
