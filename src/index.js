@@ -22,9 +22,6 @@ const PORT = process.env.PORT || 3000;
 import { authMiddleware } from './middleware/authMiddleware.js';
 import { userAuthMiddleware } from './middleware/userAuthMiddleware.js';
 
-// Connect to MongoDB
-// connectDB();
-
 // Middleware
 app.use(cors());
 
