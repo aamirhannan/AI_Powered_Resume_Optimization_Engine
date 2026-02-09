@@ -143,154 +143,198 @@
 <body>
     <div id="resume-container">
         <!-- Header -->
-        <div class="header">
-            <div class="name">
-                <%= header.fullName %>
-            </div>
-            <div class="contact-info">
-                <% if (header.contact.phone) { %>
-                    <span>
-                        <%= header.contact.phone %>
-                    </span>
-                    <span class="contact-separator">♦</span>
+        <% if (locals.header) { %>
+            <div class="header">
+                <% if (header.fullName) { %>
+                    <div class="name">
+                        <%= header.fullName %>
+                    </div>
                     <% } %>
-                        <% if (header.contact.location) { %>
-                            <span>
-                                <%= header.contact.location %>
-                            </span>
-                            <span class="contact-separator">♦</span>
-                            <% } %>
-                                <% if (header.contact.email) { %>
-                                    <a style="font-weight: normal; font-size: 9pt; color: #0000EE;" target="_blank"
-                                        href="mailto:<%= header.contact.email %>">
-                                        <%= header.contact.email %>
-                                    </a>
-                                    <% } %>
-                                        <% if (header.contact.links) { %>
-                                            <% Object.entries(header.contact.links).forEach(([key, value])=> { %>
-                                                <span class="contact-separator">♦</span>
-                                                <a style="font-weight: normal; font-size: 9pt; color: #0000EE;"
-                                                    target="_blank" href="<%= value %>" target="_blank">
-                                                    <%= key.charAt(0).toUpperCase() + key.slice(1) %>
-                                                </a>
-                                                <% }); %>
-                                                    <% } %>
-            </div>
-        </div>
 
-        <!-- Professional Summary -->
-        <% if (professionalSummary) { %>
-            <div class="section">
-                <div class="section-header">Professional Summary</div>
-                <div style="text-align: justify;">
-                    <%= professionalSummary %>
-                </div>
+                        <% if (header.contact) { %>
+                            <div class="contact-info">
+                                <% if (header.contact.phone) { %>
+                                    <span>
+                                        <%= header.contact.phone %>
+                                    </span>
+                                    <span class="contact-separator">♦</span>
+                                    <% } %>
+                                        <% if (header.contact.location) { %>
+                                            <span>
+                                                <%= header.contact.location %>
+                                            </span>
+                                            <span class="contact-separator">♦</span>
+                                            <% } %>
+                                                <% if (header.contact.email) { %>
+                                                    <a style="font-weight: normal; font-size: 9pt; color: #0000EE;"
+                                                        target="_blank" href="mailto:<%= header.contact.email %>">
+                                                        <%= header.contact.email %>
+                                                    </a>
+                                                    <% } %>
+                                                        <% if (header.contact.links) { %>
+                                                            <% Object.entries(header.contact.links).forEach(([key,
+                                                                value])=> { %>
+                                                                <% if (value) { %>
+                                                                    <span class="contact-separator">♦</span>
+                                                                    <a style="font-weight: normal; font-size: 9pt; color: #0000EE;"
+                                                                        target="_blank" href="<%= value %>">
+                                                                        <%= key.charAt(0).toUpperCase() + key.slice(1)
+                                                                            %>
+                                                                    </a>
+                                                                    <% } %>
+                                                                        <% }); %>
+                                                                            <% } %>
+                            </div>
+                            <% } %>
             </div>
             <% } %>
 
-                <!-- Experience -->
-                <% if (experience && experience.length> 0) { %>
+                <!-- Professional Summary -->
+                <% if (locals.professionalSummary) { %>
                     <div class="section">
-                        <div class="section-header">Experience</div>
-                        <% experience.forEach(job=> { %>
-                            <div class="entry">
-                                <div class="entry-header">
-                                    <span class="entry-title">
-                                        <%= job.role %>
-                                    </span>
-                                    <span class="entry-date">
-                                        <%= job.duration.start %> – <%= job.duration.end %>
-                                    </span>
-                                </div>
-                                <div class="entry-subtitle">
-                                    <span>
-                                        <%= job.company %>
-                                    </span>
-                                    <span>
-                                        <% if (job.location) { %>
-                                            <%= job.location %>
-                                                <% } %>
-                                                    <% if (job.location && job.employmentType) { %>, <% } %>
-                                                            <% if (job.employmentType) { %><em>
-                                                                    <%= job.employmentType.toLowerCase() %>
-                                                                </em>
-                                                                <% } %>
-                                    </span>
-                                </div>
-                                <% if (job.responsibilitiesAndAchievements) { %>
-                                    <ul>
-                                        <% job.responsibilitiesAndAchievements.forEach(bullet=> { %>
-                                            <li><%- bullet %></li>
-                                            <% }); %>
-                                    </ul>
-                                    <% } %>
-                            </div>
-                            <% }); %>
+                        <div class="section-header">Professional Summary</div>
+                        <div style="text-align: justify;">
+                            <%= professionalSummary %>
+                        </div>
                     </div>
                     <% } %>
 
-                        <!-- Technical Skills -->
-                        <% if (technicalSkills && Object.keys(technicalSkills).length> 0) { %>
+                        <!-- Experience -->
+                        <% if (locals.experience && experience.length> 0) { %>
                             <div class="section">
-                                <div class="section-header">Technical Skills</div>
-                                <ul class="skills-list">
-                                    <% Object.entries(technicalSkills).forEach(([category, skills])=> { %>
-                                        <li class="skill-category">
-                                            <span class="skill-label">
-                                                <%= category.replace(/([A-Z])/g, ' $1' ).replace(/^./, str=>
-                                                    str.toUpperCase()) %>:
+                                <div class="section-header">Experience</div>
+                                <% experience.forEach(job=> { %>
+                                    <div class="entry">
+                                        <div class="entry-header">
+                                            <span class="entry-title">
+                                                <%= job.role || 'Role' %>
+                                            </span>
+                                            <span class="entry-date">
+                                                <% if (job.duration) { %>
+                                                    <%= job.duration.start || '' %> – <%= job.duration.end || '' %>
+                                                            <% } %>
+                                            </span>
+                                        </div>
+                                        <div class="entry-subtitle">
+                                            <span>
+                                                <%= job.company || 'Company' %>
                                             </span>
                                             <span>
-                                                <%= Array.isArray(skills) ? skills.join(', ') : skills %></span>
-                    </li>
+                                                <% if (job.location) { %>
+                                                    <%= job.location %>
+                                                        <% } %>
+                                                            <% if (job.location && job.employmentType) { %>, <% } %>
+                                                                    <% if (job.employmentType) { %>
+                                                                        <em>
+                                                                            <%= job.employmentType %>
+                                                                        </em>
+                                                                        <% } %>
+                                            </span>
+                                        </div>
+                                        <% if (job.responsibilitiesAndAchievements &&
+                                            job.responsibilitiesAndAchievements.length> 0) { %>
+                                            <ul>
+                                                <% job.responsibilitiesAndAchievements.forEach(bullet=> { %>
+                                                    <li><%- bullet %></li>
+                                                    <% }); %>
+                                            </ul>
+                                            <% } %>
+                                                <% if (job.technologies && job.technologies.length> 0) { %>
+                                                    <div style="margin-top: 2pt; font-size: 10pt; font-style: italic;">
+                                                        <strong>Tech Stack: </strong>
+                                                        <%= job.technologies.join(', ') %>
+                            </div>
+                        <% } %>
+                    </div>
                 <% }); %>
-            </ul>
-        </div>
+            </div>
+        <% } %>
+
+        <!-- Technical Skills -->
+        <% if (locals.technicalSkills && Object.keys(technicalSkills).length > 0) { %>
+            <div class="section">
+                <div class="section-header">Technical Skills</div>
+                <ul class="skills-list">
+                    <% Object.entries(technicalSkills).forEach(([category, skills]) => { %>
+                        <li class="skill-category">
+                            <span class="skill-label">
+                                <%= category.replace(/([A-Z])/g, ' $1').replace(/^./, str=> str.toUpperCase()) %>:
+                                                            </span>
+                                                            <span>
+                                                                <%= Array.isArray(skills) ? skills.join(', ') : skills %>
+                            </span>
+                        </li>
+                    <% }); %>
+                </ul>
+            </div>
         <% } %>
 
         <!-- Education -->
-        <% if (education) { %>
-        <div class="section">
-            <div class="section-header">Education</div>
-            <div class="entry">
-                <div class="entry-header">
-                    <span class="entry-title"><%= education.degree %></span>
-                    <span class="entry-date">
-                         <%= education.duration.start %> – <%= education.duration.end %>
-                    </span>
-                </div>
-                <div class="entry-subtitle">
-                    <span><%= education.institution %></span>
-                </div>
-            </div>
-        </div>
-        <% } %>
-
-        <!-- Projects -->
-        <% if (projects && projects.length > 0) { %>
-        <div class="section">
-            <div class="section-header">Projects</div>
-            <% projects.forEach(project => { %>
+        <% if (locals.education) { %>
+            <div class="section">
+                <div class="section-header">Education</div>
                 <div class="entry">
                     <div class="entry-header">
-                        <span class="entry-title">
-                            <%= project.title %>
-                            <% if (project.links && project.links.live) { %>
-                                <a target="_blank" href="<%= project.links.live %> " style="font-weight: normal; font-size: 9pt; color: #0000EE;">[View]</a>
+                        <span class="entry-title"><%= education.degree || ' Degree' %>
+                                                            </span>
+                                                            <span class="entry-date">
+                                                                <% if (education.duration) { %>
+                                                                    <%= education.duration.start || '' %> – <%=
+                                                                            education.duration.end || '' %>
+                                                                            <% } %>
+                                                            </span>
+                                                    </div>
+                                                    <div class="entry-subtitle">
+                                                        <span>
+                                                            <%= education.institution || 'Institution' %>
+                                                        </span>
+                                                    </div>
+                                    </div>
+                            </div>
                             <% } %>
-                        </span>
-                        <span><!-- Optional Project Date --></span>
+
+                                <!-- Projects -->
+                                <% if (locals.projects && projects.length> 0) { %>
+                                    <div class="section">
+                                        <div class="section-header">Projects</div>
+                                        <% projects.forEach(project=> { %>
+                                            <div class="entry">
+                                                <div class="entry-header">
+                                                    <span class="entry-title">
+                                                        <%= project.title || 'Project' %>
+                                                            <% if (project.links) { %>
+                                                                <% Object.entries(project.links).forEach(([key, url])=>
+                                                                    { %>
+                                                                    <% if (url) { %>
+                                                                        [<a target="_blank" href="<%= url %>"
+                                                                            style="font-weight: normal; font-size: 9pt; color: #0000EE;">
+                                                                            <%= key.charAt(0).toUpperCase() +
+                                                                                key.slice(1) %>
+                                                                        </a>]
+                                                                        <% } %>
+                                                                            <% }); %>
+                                                                                <% } %>
+                                                    </span>
+                                                    <span><!-- Optional Project Date --></span>
+                                                </div>
+                                                <% if (project.description && project.description.length> 0) { %>
+                                                    <ul>
+                                                        <% project.description.forEach(bullet=> { %>
+                                                            <li><%- bullet %></li>
+                                                            <% }); %>
+                                                    </ul>
+                                                    <% } %>
+                                                        <% if (project.technologyStack &&
+                                                            project.technologyStack.length> 0) { %>
+                                                            <div
+                                                                style="margin-top: 2pt; font-size: 10pt; font-style: italic;">
+                                                                <strong>Tech Stack: </strong>
+                                                                <%= project.technologyStack.join(', ') %>
+                            </div>
+                        <% } %>
                     </div>
-                    <% if (project.description) { %>
-                        <ul>
-                            <% project.description.forEach(bullet => { %>
-                                <li><%- bullet %></li>
-                            <% }); %>
-                        </ul>
-                    <% } %>
-                </div>
-            <% }); %>
-        </div>
+                <% }); %>
+            </div>
         <% } %>
     </div>
 
@@ -302,20 +346,22 @@
         function normalizeLayout() {
             const container = document.body;
             let currentFontSize = parseFloat(getComputedStyle(container).getPropertyValue(' --base-font-size')) || 11;
-            while (container.scrollHeight > TARGET_HEIGHT && currentFontSize >
-                MIN_FONT_SIZE) {
+            while (container.scrollHeight > TARGET_HEIGHT &&
+                currentFontSize > MIN_FONT_SIZE) {
                 currentFontSize -= 0.2;
                 container.style.setProperty('--base-font-size',
                     `${currentFontSize}pt`);
 
                 if (currentFontSize < 10) {
-                    container.style.setProperty('--line-height', '1.2');
-                    container.style.setProperty('--margin-bottom', '4pt');
+                    container.style.setProperty('--line-height', '1.2'
+                    );
+                    container.style.setProperty('--margin-bottom', '4pt'
+                    );
                 }
             }
-            document.body.setAttribute('data-normalized', 'true');
-        }
-        window.onload = normalizeLayout; </script>
+            document.body.setAttribute('data-normalized', 'true'
+            );
+        } window.onload = normalizeLayout; </script>
 </body>
 
 </html>
