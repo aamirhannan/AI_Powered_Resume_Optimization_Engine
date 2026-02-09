@@ -12,6 +12,8 @@ import { uploadResumePDF } from '../services/storageService.js';
 import fs from 'fs';
 import { camelToSnake, snakeToCamel } from './utils.js';
 import { createRequestLog, completeRequestLog } from '../services/apiRequestLogger.js';
+import * as jobProfileDbController from '../DatabaseController/jobProfileDatabaseController.js';
+import { transformToApiFormat } from './jobProfileController.js';
 
 export const getResumeGeneration = async (req, res) => {
     try {
@@ -31,7 +33,14 @@ export const createResumeGeneration = async (req, res) => {
     const supabase = getAuthenticatedClient(req.accessToken);
 
     try {
-        const { role, jobDescription } = req.body;
+        const { role: baseResumeId, jobDescription } = req.body;
+
+        const baseResumeData = await jobProfileDbController.fetchJobProfileById(supabase, baseResumeId);
+        const role = baseResumeData.profile_type;
+
+        // Transform from flat DB format to nested resume format expected by EJS template
+        const baseResumeCamel = snakeToCamel(baseResumeData);
+        const baseResume = transformToApiFormat(baseResumeCamel);
 
         // 1. Start Logging
         logId = await createRequestLog(supabase, req.user.id, 'RESUME_GENERATION', '/create-resume', { role, job_description: jobDescription });
@@ -39,8 +48,6 @@ export const createResumeGeneration = async (req, res) => {
         if (!role) {
             throw new Error('Role is required');
         }
-
-        const baseResume = getResumeByRole(role);
 
         // Execute Pipeline to get optimized data
         const pipeline = new Pipeline()
