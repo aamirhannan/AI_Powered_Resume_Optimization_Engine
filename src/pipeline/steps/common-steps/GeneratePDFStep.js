@@ -32,7 +32,7 @@ export class GeneratePDFStep extends Step {
         // Format role: snake_case
         const formattedRole = (role || 'Developer').replace(/\s+/g, '_').toLowerCase();
 
-        const fileName = `aamir_${formattedRole}_${formattedDate}.pdf`;
+        const fileName = `resume_${formattedDate}.pdf`;
         const filePath = path.resolve(process.cwd(), fileName);
 
         fs.writeFileSync(filePath, pdfBuffer);
