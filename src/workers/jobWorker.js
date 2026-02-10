@@ -25,10 +25,50 @@ export const startWorker = async () => {
             for (const message of messages) {
                 const { Body, ReceiptHandle } = message;
 
+                const startedAt = Date.now();
+
                 try {
                     const { id, senderEmail, logId, company, role, baseResume, user_id } = JSON.parse(Body);
 
-                    let duration_ms = Date.now();
+                    const finalizeJob = async (status, payload = {}, errorMessage = null) => {
+                        if (logId) {
+                            await completeRequestLog(
+                                supabaseAdmin,
+                                logId,
+                                status,
+                                status === 'SUCCESS' ? 200 : (payload.statusCode || 500),
+                                payload.responsePayload || {},
+                                Date.now() - (startedAt || Date.now()),
+                                errorMessage
+                            );
+                        }
+
+                        if (id) {
+                            const updateData = {
+                                status,
+                                updated_at: new Date()
+                            };
+                            if (status === 'FAILED') {
+                                updateData.error = errorMessage || 'FAILED';
+                            }
+                            if (status === 'SUCCESS') {
+                                updateData.resume_content = payload.resume_content || '';
+                                updateData.email_subject = payload.email_subject || '';
+                                updateData.cover_letter = payload.cover_letter || '';
+                                updateData.company = payload.company;
+                                updateData.role = payload.role;
+                            }
+
+                            const { error: updateError } = await supabaseAdmin
+                                .from('email_automations')
+                                .update(updateData)
+                                .eq('id', id);
+
+                            if (updateError) {
+                                throw updateError;
+                            }
+                        }
+                    };
 
                     if (logId) {
                         await logStep(supabaseAdmin, logId, 'WORKER_RECEIVED', 'SUCCESS', { workerId: WORKER_ID });
@@ -62,6 +102,11 @@ export const startWorker = async () => {
                         .update({ status: 'IN_PROGRESS', updated_at: new Date() })
                         .eq('id', id);
 
+                    // Removed completeRequestLog with IN_PROGRESS as it violates api_request_logs status constraint
+                    if (logId) {
+                        await logStep(supabaseAdmin, logId, 'WORKER_STARTED', 'IN_PROGRESS', { workerId: WORKER_ID });
+                    }
+
                     // 3. Execute Pipeline
                     const jobDetails = snakeToCamel(job);
 
@@ -90,35 +135,20 @@ export const startWorker = async () => {
                     // 6. Success Update
                     // Note: 'result' column doesn't exist in your schema provided, 
                     // assuming we just update status or add text logs if needed.
-                    await supabaseAdmin.from('email_automations')
-                        .update({
-                            status: 'SUCCESS',
-                            resume_content: result.finalResume || '',
-                            email_subject: result.emailSubject || '',
-                            cover_letter: result.coverLetter || '',
-                            company,
-                            role,
-                            updated_at: new Date()
-                        })
-                        .eq('id', id);
+                    await finalizeJob('SUCCESS', {
+                        resume_content: result.finalResume || '',
+                        email_subject: result.emailSubject || '',
+                        cover_letter: result.coverLetter || '',
+                        company,
+                        role,
+                        responsePayload: {
+                            resume_content: result.finalResume,
+                            email_subject: result.emailSubject,
+                            cover_letter: result.coverLetter
+                        }
+                    });
 
                     console.log(`✅ Job ${id} COMPLETED.`);
-
-                    if (logId) {
-                        duration_ms = Date.now() - duration_ms;
-                        await completeRequestLog(
-                            supabaseAdmin,
-                            logId,
-                            'SUCCESS',
-                            200,
-                            {
-                                resume_content: result.finalResume,
-                                email_subject: result.emailSubject,
-                                cover_letter: result.coverLetter
-                            },
-                            duration_ms
-                        );
-                    }
 
                     await deleteMessageFromQueue(ReceiptHandle);
 
@@ -128,23 +158,29 @@ export const startWorker = async () => {
 
                     try {
                         const { id, logId } = JSON.parse(Body);
-                        if (logId) {
-                            await completeRequestLog(
-                                supabaseAdmin,
-                                logId,
-                                'FAILED',
-                                statusCode,
-                                'FAILED',
-                                { error: err.message });
-                        }
+                        const errorMessage = err.message || 'FAILED';
+                        await completeRequestLog(
+                            supabaseAdmin,
+                            logId,
+                            'FAILED',
+                            statusCode,
+                            { error: errorMessage },
+                            Date.now() - (startedAt || Date.now()),
+                            errorMessage
+                        );
                         if (id) {
-                            await supabaseAdmin.from('email_automations')
-                                .update({ status: 'FAILED', error: err.message, updated_at: new Date() })
+                            const { error: updateError } = await supabaseAdmin
+                                .from('email_automations')
+                                .update({ status: 'FAILED', error: errorMessage, updated_at: new Date() })
                                 .eq('id', id);
+                            if (updateError) {
+                                throw updateError;
+                            }
                         }
-                    } catch (dbErr) { /* ignore */ }
-
-                    await deleteMessageFromQueue(ReceiptHandle);
+                        await deleteMessageFromQueue(ReceiptHandle);
+                    } catch (dbErr) {
+                        console.error('Failed to persist failure state:', dbErr);
+                    }
                 }
             }
 
