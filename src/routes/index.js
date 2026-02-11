@@ -13,17 +13,22 @@ import paymentRoutes from "./paymentRoutes.js";
 
 const router = express.Router();
 
+// Features routes
 router.use("/email-automation", emailAutomationRoutes);
-router.use("/founder-outreaches", founderOutreachesRoutes);
-router.use("/generated-resume", generatedResumeRoutes);
-router.use("/master-resume", masterResumeRoutes);
 router.use("/resume-generation", resumeGenerationRoutes);
-router.use("/user-setting", userSettingRoutes);
+router.use("/founder-outreaches", founderOutreachesRoutes);
+
+// User facing routes
 router.use("/dashboard", dashboardRoutes);
+router.use("/user-setting", userSettingRoutes);
 router.use("/api-request-logs", apiRequestLogRoutes);
 router.use("/job-profile", jobProfileRoutes);
 router.use("/resume-parser", resumeParserRoutes);
 router.use("/payment", paymentRoutes);
+
+router.use("/generated-resume", generatedResumeRoutes);
+router.use("/master-resume", masterResumeRoutes);
+
 
 
 export default router;

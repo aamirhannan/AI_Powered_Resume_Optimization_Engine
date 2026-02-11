@@ -1,9 +1,11 @@
 import express from 'express';
-import { getFounderOutreaches, createFounderOutreach } from '../controllers/founderOutreachesController.js';
+import { getFounderOutreaches, createFounderOutreach, getFounderDetails, fetchFounderDetailsFromTomba } from '../controllers/founderOutreachesController.js';
 
 const router = express.Router();
 
-router.get('/founders-outreach-with-linkedin', getFounderOutreaches);
-router.post('/founders-outreach-with-linkedin', createFounderOutreach);
+router.get('/get-details', getFounderOutreaches);
+router.post('/create-outreach', createFounderOutreach);
+router.get('/get-details/:id', getFounderDetails);
+router.post('/fetch-details', fetchFounderDetailsFromTomba);
 
 export default router;
