@@ -206,3 +206,19 @@ export const transformToApiFormat = (dbData) => {
         projects: dbData.projects || []
     };
 };
+
+export const checkProfileName = async (req, res) => {
+    try {
+        const supabase = getAuthenticatedClient(req.accessToken);
+        const { profileName, excludeId } = req.body;
+        const isDuplicate = await dbController.checkDuplicateProfileType(
+            supabase,
+            profileName,
+            req.user.id,
+            excludeId
+        );
+        res.status(200).json({ isDuplicate });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

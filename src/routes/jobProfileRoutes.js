@@ -5,7 +5,8 @@ import {
     createJobProfile,
     updateJobProfile,
     deleteJobProfile,
-    getJobProfileDropdown
+    getJobProfileDropdown,
+    checkProfileName
 } from '../controllers/jobProfileController.js';
 
 const router = express.Router();
@@ -27,5 +28,8 @@ router.put('/:id', updateJobProfile);
 
 // DELETE /job-profile/:id - Deletes profile
 router.delete('/:id', deleteJobProfile);
+
+// POST /check-profile-name - Checks if profile name already exists
+router.post('/check-profile-name', checkProfileName);
 
 export default router;
