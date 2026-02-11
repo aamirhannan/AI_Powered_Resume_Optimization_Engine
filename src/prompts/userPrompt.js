@@ -1143,7 +1143,7 @@ SUBJECT LINE RULES:
 PREFERRED FORMATS:
 1. Application for [Exact Role] – [Name] – [Key Tech]
 2. [Exact Role] Application | [Name] | [Primary Stack]
-3. [Name] for [Exact Role] (2+ Years, [Key Skill])
+3. [Name] for [Exact Role] (Years of Experience, [Key Skill])
 
 OUTPUT:
 Return ONLY the single BEST subject line.
