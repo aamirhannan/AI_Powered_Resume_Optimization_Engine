@@ -227,6 +227,27 @@ create index idx_job_profiles_skills on public.job_profiles using gin (technical
 create index idx_job_profiles_user_id on public.job_profiles(user_id);
 
 -- -----------------------------------------------------------------------------
+-- 11. USER INTEGRATIONS (Map: userOnboarding)
+-- Stores external API connections (e.g., Gmail).
+-- -----------------------------------------------------------------------------
+create table public.user_integrations (
+  id uuid not null default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  provider text not null, -- e.g. 'gmail'
+  access_token text,
+  refresh_token text,
+  token_expiry timestamptz,
+  connected_email text,
+  is_active boolean default true,
+  
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  
+  constraint user_integrations_pkey primary key (id),
+  constraint user_integrations_user_id_provider_key unique (user_id, provider)
+);
+
+-- -----------------------------------------------------------------------------
 -- 9. SECURITY POLICIES (Row Level Security)
 -- Ensures users can only see their own data.
 -- -----------------------------------------------------------------------------
@@ -266,6 +287,14 @@ create policy "Users manage own api logs" on public.api_request_logs
   with check (auth.uid() = user_id);
 
 create policy "Users manage own job profiles" on public.job_profiles
+  for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+alter table public.user_integrations enable row level security;
+
+-- Policy to allow users to do everything (CRUD) on their own integrations
+create policy "Users manage own integrations" on public.user_integrations
   for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
