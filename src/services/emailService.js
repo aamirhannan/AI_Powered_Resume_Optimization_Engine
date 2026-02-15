@@ -30,6 +30,7 @@ class EmailService {
                 validAccessToken = refreshedToken;
             }
         } catch (error) {
+            console.error("Failed to refresh access token:", error.response ? error.response.data : error.message);
             // Silently fail refresh and try with existing token
             // In a production environment you might want to log this or throw
         }
