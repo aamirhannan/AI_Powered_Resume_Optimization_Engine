@@ -127,11 +127,22 @@ export const retryFailedApplications = async (req, res) => {
             }
         }
 
+        // Create Log entry for the retry
+        logId = await createRequestLog(
+            supabase,
+            req.user.id,
+            'EMAIL_AUTOMATION',
+            '/retry-failed',
+            { original_automation_id: id },
+            updatedRecord.company,
+            updatedRecord.role
+        );
+
         const task = {
             id: updatedRecord.id,
             user_id: req.user.id,
             senderEmail: updatedRecord.sender_email,
-            logId: null, // New log? or continue old? Maybe null for retry to avoid clutter
+            logId: logId, // Pass the NEW log ID
             company: updatedRecord.company,
             role: updatedRecord.role,
             baseResume,
@@ -147,6 +158,9 @@ export const retryFailedApplications = async (req, res) => {
 
     } catch (error) {
         console.error("Retry failed:", error);
+        if (logId) {
+            await completeRequestLog(supabase, logId, 'FAILED', 500, null, error.message);
+        }
         res.status(500).json({ error: "Failed to retry application: " + error.message });
     }
 };
