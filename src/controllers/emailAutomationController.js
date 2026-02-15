@@ -42,15 +42,9 @@ export const createEmailAutomation = async (req, res) => {
 
         const senderEmail = req.user.userEmailString;
 
-        // Check for duplicates
-        const duplicates = await dbController.checkDuplicateEmailWithInTimeFrame(supabase, payload);
-        if (duplicates && duplicates.length > 0) {
-            const errorMsg = 'Duplicate application: You have already applied to this email for this role in the last 7 days.';
-            if (logId) {
-                await completeRequestLog(supabase, logId, 'FAILED', 409, { error: errorMsg }, errorMsg);
-            }
-            return res.status(409).json({ error: errorMsg });
-        }
+        // Check for duplicates - MOVED TO MIDDLEWARE
+        // const duplicates = await dbController.checkDuplicateEmailWithInTimeFrame(supabase, payload);
+        // if (duplicates && duplicates.length > 0) { ... }
 
         const data = await dbController.insertEmailAutomation(supabase, payload, req.user.id);
 
@@ -89,5 +83,70 @@ export const updateEmailAutomation = async (req, res) => {
         res.status(201).json(response);
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+};
+
+export const retryFailedApplications = async (req, res) => {
+    let logId = null;
+    const { id } = req.body; // Expecting { id: "automation_uuid" }
+
+    if (!id) return res.status(400).json({ error: "Missing automation ID" });
+
+    try {
+        const supabase = getAuthenticatedClient(req.accessToken);
+
+        // 1. Fetch the failed record using Abstracted DB Controller
+        const record = await dbController.fetchEmailAutomationById(supabase, id, req.user.id);
+
+        if (!record) {
+            return res.status(404).json({ error: "Application not found or access denied." });
+        }
+
+        // 2. Validate status (must be FAILED to retry)
+        // Optionally allow retrying PENDING if stuck? For now, stick to FAILED.
+        if (record.status !== 'FAILED') {
+            // We can allow retrying if it's been 'IN_PROGRESS' for too long, but simple check first
+            return res.status(400).json({ error: `Cannot retry application with status: ${record.status}` });
+        }
+
+        // 3. Reset status to PENDING using Abstracted DB Controller
+        const updatedRecord = await dbController.resetEmailAutomationStatus(supabase, id);
+
+        // 4. Re-construct the task for SQS
+        // We need 'baseResume' data which isn't stored in email_automations directly, 
+        // but we have 'role' (profile_type) or generated_resume_id.
+        // The original create flow used 'role' to fetch 'baseResume' from 'job_profiles'.
+
+        let baseResume = null;
+        if (record.role) {
+            // Re-fetch base resume based on role/profile_type
+            const baseResumeData = await jobProfileDbController.fetchJobProfileById(supabase, record.role);
+            if (baseResumeData) {
+                const baseResumeCamel = snakeToCamel(baseResumeData);
+                baseResume = transformToApiFormat(baseResumeCamel);
+            }
+        }
+
+        const task = {
+            id: updatedRecord.id,
+            user_id: req.user.id,
+            senderEmail: updatedRecord.sender_email,
+            logId: null, // New log? or continue old? Maybe null for retry to avoid clutter
+            company: updatedRecord.company,
+            role: updatedRecord.role,
+            baseResume,
+            // Add retry flag if needed by worker
+            isRetry: true
+        };
+
+        // 5. Push to Queue
+        await sendMessageToQueue(task);
+
+        const response = snakeToCamel(updatedRecord);
+        res.status(200).json({ message: "Retry initiated", data: response });
+
+    } catch (error) {
+        console.error("Retry failed:", error);
+        res.status(500).json({ error: "Failed to retry application: " + error.message });
     }
 };
