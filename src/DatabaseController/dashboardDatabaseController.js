@@ -1,5 +1,5 @@
 
-import { startOfDay, subDays, startOfWeek, endOfWeek, subWeeks, format, parseISO, differenceInMilliseconds } from 'date-fns';
+import { startOfDay, subDays, startOfWeek, endOfWeek, subWeeks, format, parseISO, differenceInMilliseconds, startOfYear, endOfYear } from 'date-fns';
 
 const calculateGrowth = (current, previous) => {
     if (previous === 0) return current > 0 ? 100 : 0;
@@ -151,13 +151,17 @@ export const fetchDashboardDailyVelocity = async (client, { startDate, endDate }
 };
 
 export const fetchDashboardHeatmap = async (client, { startDate, endDate } = {}) => {
+    // Force range to Current Year (Jan 1 - Dec 31) regardless of filter
+    const now = new Date();
+    const yearStart = startOfYear(now).toISOString();
+    const yearEnd = endOfYear(now).toISOString();
+
     let query = client
         .from('api_request_logs')
         .select('created_at')
-        .in('type', ['EMAIL_AUTOMATION', 'FOUNDERS_OUTREACH']);
-
-    if (startDate) query = query.gte('created_at', startDate);
-    if (endDate) query = query.lte('created_at', endDate);
+        .in('type', ['EMAIL_AUTOMATION', 'FOUNDERS_OUTREACH'])
+        .gte('created_at', yearStart)
+        .lte('created_at', yearEnd);
 
     const { data: logs, error } = await query;
     if (error) throw error;
