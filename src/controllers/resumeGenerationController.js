@@ -14,6 +14,7 @@ import { camelToSnake, snakeToCamel } from './utils.js';
 import { createRequestLog, completeRequestLog } from '../services/apiRequestLogger.js';
 import * as jobProfileDbController from '../DatabaseController/jobProfileDatabaseController.js';
 import { transformToApiFormat } from './jobProfileController.js';
+import * as service from '../services/resumeGenerationService.js';
 
 export const getResumeGeneration = async (req, res) => {
     try {
@@ -29,76 +30,25 @@ export const getResumeGeneration = async (req, res) => {
 
 
 export const createResumeGeneration = async (req, res) => {
-    let logId = null;
     const supabase = getAuthenticatedClient(req.accessToken);
 
     try {
-        const { role: baseResumeId, jobDescription } = req.body;
-
-        const baseResumeData = await jobProfileDbController.fetchJobProfileById(supabase, baseResumeId);
-        const role = baseResumeData.profile_type;
-
-        // Transform from flat DB format to nested resume format expected by EJS template
-        const baseResumeCamel = snakeToCamel(baseResumeData);
-        const baseResume = transformToApiFormat(baseResumeCamel);
-
-        // 1. Start Logging
-        logId = await createRequestLog(supabase, req.user.id, 'RESUME_GENERATION', '/create-resume', { role, job_description: jobDescription });
-
-        if (!role) {
-            throw new Error('Role is required');
-        }
-
-        // Execute Pipeline to get optimized data
-        const pipeline = new Pipeline()
-            .addStep(new RewriteResumeViaLLM())
-            .addStep(new CriticalAnalysis())
-            .addStep(new EvidenceBasedRefinement())
-            .addStep(new InsertNewlyCreatedResumePoints());
-
-        // 2. Pass Logger Context to Pipeline
-        const result = await pipeline.execute({
-            resume: baseResume,
-            jobDescription,
-            tokenUsage: { input: 0, output: 0, total: 0, cost: 0 }
-        }, { supabase, logId });
-
-        // Generate PDF
-        const evidenceBasedResume = await createPDF(result.finalResume);
-
-        const generationData = {
-            role,
-            prev_resume_content: baseResume,
-            new_resume_content: result.finalResume,
-            status: "SUCCESS",
-        };
-
-        await dbController.createResumeGeneration(supabase, generationData, req.user.id);
-
-        // 3. Complete Logging (Success)
-        await completeRequestLog(supabase, logId, 'SUCCESS', 200, {
-            resume_content: result.finalResume,
-        });
+        const userId = req.user.id;
+        const result = await service.createResumeGenerationService(supabase, userId, req.body);
 
         res.set({
             'Content-Type': 'application/pdf',
-            'Content-Length': evidenceBasedResume.length,
-            'Content-Disposition': `attachment; filename="Resumes_${role || 'Optimized'}.pdf"`,
+            'Content-Length': result.pdfBuffer.length,
+            'Content-Disposition': `attachment; filename="Resumes_${result.role || 'Optimized'}.pdf"`,
             'X-Token-Usage-Cost': result.tokenUsage?.cost?.toFixed(4) || '0',
             'X-Token-Input': result.tokenUsage?.input || '0',
             'X-Token-Output': result.tokenUsage?.output || '0'
         });
 
-        res.send(evidenceBasedResume);
+        res.send(result.pdfBuffer);
 
     } catch (error) {
         console.error('Error generating PDF:', error);
-
-        // 4. Complete Logging (Failure)
-        if (logId) {
-            await completeRequestLog(supabase, logId, 'FAILED', 500, null, error.message);
-        }
-
         res.status(500).json({ success: false, error: error.message });
     }
 };
