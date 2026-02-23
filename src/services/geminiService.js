@@ -133,6 +133,50 @@ Return the structured JSON:
             throw error;
         }
     }
+
+    async extractEmailAndJD(rawText) {
+        if (!this.genAI) {
+            throw new Error("GEMINI_API_KEY is not configured.");
+        }
+
+        const model = this.genAI.getGenerativeModel({
+            model: this.modelName,
+            generationConfig: {
+                responseMimeType: "application/json"
+            }
+        });
+
+        const systemPrompt = `You are a helpful assistant that extracts job application information from unstructured text.
+Your task is to identify and extract the Recruiter's Email (or any email to apply to) and the clean Job Description from the provided text.
+
+Rules:
+1. "targetEmail": Extract the target email address to apply to. If you don't find any email or are strictly unsure, set this to null.
+2. "jobDescription": Clean up the text to represent just the Job Description and responsibilities. Remove excessive boilerplate if possible, but keep all requirements.
+3. Return strictly valid JSON.
+
+Schema:
+{
+    "targetEmail": "String | null",
+    "jobDescription": "String"
+}`;
+
+        const userPrompt = `Raw Text: "${rawText.substring(0, 8000)}"`;
+
+        try {
+            const result = await model.generateContent([
+                systemPrompt,
+                userPrompt
+            ]);
+
+            const response = await result.response;
+            const text = response.text();
+
+            return JSON.parse(text);
+        } catch (error) {
+            console.error('Gemini Extract Error:', error);
+            throw error;
+        }
+    }
 }
 
 export const geminiService = new GeminiService();
