@@ -28,6 +28,12 @@ export const startTelegramBot = async () => {
         const me = await bot.getMe();
         botUsername = me.username;
         console.log(`Telegram Bot started as @${botUsername}`);
+
+        // Setup bot menu commands for auto-completion
+        await bot.setMyCommands([
+            { command: '/start', description: 'Start or restart the bot' },
+            { command: '/menu', description: 'Show the main menu options' }
+        ]);
     } catch (error) {
         console.error("Failed to fetch bot info:", error);
     }
@@ -62,8 +68,18 @@ export const startTelegramBot = async () => {
             if (userId) {
                 showMainMenu(bot, chatId);
             } else {
-                bot.sendMessage(chatId, "Please link your account first via the web app.");
-            } 
+                bot.sendMessage(chatId, "👋 Welcome to the Auto Apply Bot!\n\nIt looks like your account isn't linked yet. Please visit the web app (https://www.mycareerpilot.in/) and click the Telegram integration button to get your unique start link.");
+            }
+        }
+    });
+
+    bot.onText(/\/menu/, async (msg) => {
+        const chatId = msg.chat.id.toString();
+        const userId = await dbController.getUserIdByChatId(supabaseAdmin, chatId);
+        if (userId) {
+            showMainMenu(bot, chatId);
+        } else {
+            bot.sendMessage(chatId, "👋 Welcome! Please link your account first via the web app (https://www.mycareerpilot.in/) to use the menu.");
         }
     });
 
@@ -104,7 +120,9 @@ export const startTelegramBot = async () => {
         if (!text || text.startsWith('/')) return;
 
         const userId = await dbController.getUserIdByChatId(supabaseAdmin, chatId);
-        if (!userId) return;
+        if (!userId) {
+            return bot.sendMessage(chatId, "👋 Welcome to the Bot!\n\nPlease type /start or click the Start button to begin. If you haven't linked your account, visit the web app (https://www.mycareerpilot.in/) to get your unique connection link.");
+        }
 
         const state = userStates.get(chatId);
         if (!state) return;
