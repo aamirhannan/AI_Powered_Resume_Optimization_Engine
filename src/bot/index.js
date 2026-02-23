@@ -124,8 +124,8 @@ export const startTelegramBot = async () => {
             bot.sendMessage(chatId, "Please paste the Job Description for the resume:");
         }
         else if (data === 'menu_send_email') {
-            // Placeholder for email interactive flow
-            bot.sendMessage(chatId, "Email interactive mode coming soon. Use /email command.");
+            userStates.set(chatId, { step: 'EMAIL_WAITING_INPUT', data: {} });
+            bot.sendMessage(chatId, "Please send the recruiter's email and the job description in one single message.");
         }
         else if (data.startsWith('select_profile_')) {
             const profileId = data.replace('select_profile_', '');
@@ -159,6 +159,33 @@ export const startTelegramBot = async () => {
                     console.error("Generation Error:", e);
                     bot.sendMessage(chatId, "Error generating resume: " + e.message);
                 }
+            } else if (state && state.step === 'EMAIL_WAITING_PROFILE') {
+                bot.sendMessage(chatId, "Scheduling your email... this usually takes a few moments.");
+
+                try {
+                    // Fetch user's email from Auth
+                    const { data: userAuth, error } = await supabaseAdmin.auth.admin.getUserById(userId);
+                    const userEmailString = userAuth?.user?.email;
+
+                    if (error || !userEmailString) {
+                        throw new Error("Could not retrieve your email from your account.");
+                    }
+
+                    // Call the email service
+                    await emailService.createEmailAutomationService(supabaseAdmin, userId, {
+                        targetEmail: state.data.targetEmail,
+                        role: profileId,
+                        jobDescription: state.data.jd
+                    }, userEmailString);
+
+                    bot.sendMessage(chatId, `✅ Email to ${state.data.targetEmail} has been scheduled successfully!`);
+
+                    userStates.delete(chatId);
+                    showMainMenu(chatId);
+                } catch (e) {
+                    console.error("Email Automation Error:", e);
+                    bot.sendMessage(chatId, "Error scheduling email: " + e.message);
+                }
             } else {
                 bot.sendMessage(chatId, "Session expired or invalid state. Please start over.");
                 showMainMenu(chatId);
@@ -184,6 +211,26 @@ export const startTelegramBot = async () => {
             userStates.set(chatId, state);
 
             await bot.sendMessage(chatId, "Job Description received.");
+            await showProfileSelection(chatId, userId);
+        } else if (state.step === 'EMAIL_WAITING_INPUT') {
+            const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/;
+            const emailMatch = text.match(emailRegex);
+            const targetEmail = emailMatch ? emailMatch[1] : null;
+
+            if (!targetEmail) {
+                return bot.sendMessage(chatId, "I couldn't find an email address in your message. Please reply with the recruiter's email and the job description.");
+            }
+
+            const jd = text.replace(targetEmail, '').trim();
+            if (!jd || jd.length < 10) {
+                return bot.sendMessage(chatId, "The job description seems too short or wasn't provided. Please provide both the email and details.");
+            }
+
+            state.data = { targetEmail, jd };
+            state.step = 'EMAIL_WAITING_PROFILE';
+            userStates.set(chatId, state);
+
+            await bot.sendMessage(chatId, `Extracted Email: ${targetEmail}\nJob description received.`);
             await showProfileSelection(chatId, userId);
         }
     });
