@@ -41,6 +41,7 @@ app.get('/health', (req, res) => {
 });
 
 // Start Server
+await connectDB();
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
     // Start the background worker

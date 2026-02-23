@@ -1,7 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { supabaseAdmin } from '../config/supabase.js';
 import * as dbController from '../DatabaseController/telegramDatabaseController.js';
-import { userStates, verificationCodes, generateVerificationCode, clearUserState } from './stateManager.js';
+import { generateVerificationCode, getVerificationCode, deleteVerificationCode, getUserState, clearUserState } from './stateManager.js';
 import { showMainMenu } from './utils/ui.js';
 
 // Handlers
@@ -43,20 +43,20 @@ export const startTelegramBot = async () => {
         const code = match[1];
 
         if (code) {
-            const record = verificationCodes.get(code);
+            const record = await getVerificationCode(code);
 
             if (!record) {
                 return bot.sendMessage(chatId, "Invalid or expired code.");
             }
 
             if (Date.now() > record.expiresAt) {
-                verificationCodes.delete(code);
+                await deleteVerificationCode(code);
                 return bot.sendMessage(chatId, "Code expired.");
             }
 
             try {
                 await dbController.linkTelegramUser(supabaseAdmin, record.userId, chatId);
-                verificationCodes.delete(code);
+                await deleteVerificationCode(code);
                 bot.sendMessage(chatId, "Account linked successfully!");
                 showMainMenu(bot, chatId);
             } catch (error) {
@@ -99,7 +99,7 @@ export const startTelegramBot = async () => {
             await handleEmailStart(bot, chatId);
         } else if (data.startsWith('select_profile_')) {
             const profileId = data.replace('select_profile_', '');
-            const state = userStates.get(chatId);
+            const state = await getUserState(chatId);
 
             if (state && state.step === 'RESUME_WAITING_PROFILE') {
                 await handleResumeProfileSelection(bot, chatId, userId, profileId, state);
@@ -107,7 +107,7 @@ export const startTelegramBot = async () => {
                 await handleEmailProfileSelection(bot, chatId, userId, profileId, state);
             } else {
                 bot.sendMessage(chatId, "Session expired or invalid state. Please start over.");
-                clearUserState(chatId);
+                await clearUserState(chatId);
                 showMainMenu(bot, chatId);
             }
         }
@@ -124,7 +124,7 @@ export const startTelegramBot = async () => {
             return bot.sendMessage(chatId, "👋 Welcome to the Bot!\n\nPlease type /start or click the Start button to begin. If you haven't linked your account, visit the web app (https://www.mycareerpilot.in/) to get your unique connection link.");
         }
 
-        const state = userStates.get(chatId);
+        const state = await getUserState(chatId);
         if (!state) return;
 
         if (state.step === 'RESUME_WAITING_JD') {

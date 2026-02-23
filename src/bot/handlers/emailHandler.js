@@ -1,11 +1,11 @@
-import { userStates, clearUserState } from '../stateManager.js';
+import { setUserState, getUserState, clearUserState } from '../stateManager.js';
 import { scrapeLinkedInJob } from '../utils/scraper.js';
 import { showMainMenu, showProfileSelection } from '../utils/ui.js';
 import * as emailService from '../../services/emailAutomationService.js';
 import { supabaseAdmin } from '../../config/supabase.js';
 
 export const handleEmailStart = async (bot, chatId) => {
-    userStates.set(chatId, { step: 'EMAIL_WAITING_INPUT', data: {} });
+    await setUserState(chatId, 'EMAIL_WAITING_INPUT', {});
     bot.sendMessage(chatId, "Please send either:\n1. A LinkedIn Post/Job URL\nOR\n2. The Recruiter's Email and Job Description directly.");
 };
 
@@ -16,9 +16,9 @@ export const handleEmailInput = async (bot, chatId, userId, text) => {
     const urls = text.match(urlRegex);
     let rawText = text;
 
-    if (urls && urls.length > 0) {
+    if (urls && urls.length > 0 && urls[0].includes('linkedin.com')) {
         try {
-            bot.sendMessage(chatId, "Fetching content from the URL...");
+            bot.sendMessage(chatId, "Fetching content from the LinkedIn URL...");
             rawText = await scrapeLinkedInJob(urls[0]);
         } catch (e) {
             return bot.sendMessage(chatId, e.message);
@@ -34,13 +34,15 @@ export const handleEmailInput = async (bot, chatId, userId, text) => {
         // Clean JD: remove the email from the string to present a cleaner preview
         const jobDescription = targetEmail ? rawText.replace(targetEmail, '').trim() : rawText.trim();
 
-        const state = userStates.get(chatId) || {};
+        let state = await getUserState(chatId);
+        if (!state) state = { data: {} };
+
         state.data = {
             jd: jobDescription,
             targetEmail: targetEmail
         };
         state.step = 'EMAIL_WAITING_VERIFICATION';
-        userStates.set(chatId, state);
+        await setUserState(chatId, state.step, state.data);
 
         let msg = `Here is what I found:\n\n✉️ **Email**: ${targetEmail || 'Not found'}\n\n📄 **JD Preview**:\n${jobDescription.substring(0, 300)}...`;
 
@@ -57,7 +59,7 @@ export const handleEmailInput = async (bot, chatId, userId, text) => {
 };
 
 export const handleEmailVerification = async (bot, chatId, userId, text) => {
-    const state = userStates.get(chatId);
+    const state = await getUserState(chatId);
     if (!state || !state.data) return;
 
     const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/;
@@ -68,7 +70,7 @@ export const handleEmailVerification = async (bot, chatId, userId, text) => {
         bot.sendMessage(chatId, `✅ Updated target email to: ${state.data.targetEmail}`);
 
         state.step = 'EMAIL_WAITING_PROFILE';
-        userStates.set(chatId, state);
+        await setUserState(chatId, state.step, state.data);
 
         await bot.sendMessage(chatId, "Looks good! Now let's pick your profile.");
         await showProfileSelection(bot, chatId, userId);
@@ -80,7 +82,7 @@ export const handleEmailVerification = async (bot, chatId, userId, text) => {
             }
 
             state.step = 'EMAIL_WAITING_PROFILE';
-            userStates.set(chatId, state);
+            await setUserState(chatId, state.step, state.data);
 
             await bot.sendMessage(chatId, "Looks good! Now let's pick your profile.");
             await showProfileSelection(bot, chatId, userId);
@@ -109,12 +111,12 @@ export const handleEmailProfileSelection = async (bot, chatId, userId, profileId
 
         bot.sendMessage(chatId, `✅ Your email to ${state.data.targetEmail} has been scheduled successfully!`);
 
-        clearUserState(chatId);
+        await clearUserState(chatId);
         showMainMenu(bot, chatId);
     } catch (e) {
         console.error("Email Automation Error:", e);
         bot.sendMessage(chatId, "Error scheduling email: " + e.message);
-        clearUserState(chatId);
+        await clearUserState(chatId);
         showMainMenu(bot, chatId);
     }
 };
