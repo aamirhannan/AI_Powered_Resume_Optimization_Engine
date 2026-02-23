@@ -1,0 +1,92 @@
+# Application Architecture, Folder Structure, & Coding Guidelines
+
+This project strictly adheres to a modular, layered architecture with a central focus on clean logic separation and robust error bubbling. 
+
+When generating code, always follow these rules and structures.
+
+## 1. Directory Structure & Responsibilities
+
+- `src/routes/` 
+  - **Purpose:** Express router definitions.
+  - **Rule:** Only map HTTP methods (GET, POST, etc.) and middleware to their corresponding controller functions. No business logic here.
+
+- `src/controllers/` 
+  - **Purpose:** Entry point for HTTP requests. Handles `req`/`res` objects, extracts body/query parameters, authenticates contexts (e.g., `getAuthenticatedClient`), and orchestrates calls to services or database controllers.
+  - **Rule:** MUST NOT contain direct DB queries or complex business/AI logic. 
+
+- `src/services/` 
+  - **Purpose:** Core business logic orchestration. 
+  - **Rule:** Handles things like logging state, calling multiple DB controllers, file manipulation, triggering pipelines, etc. Validates data.
+
+- `src/DatabaseController/` 
+  - **Purpose:** Database abstraction layer (Supabase).
+  - **Rule:** This is the ONLY place where `.from('table').select()` style database querying happens. Modules export discrete, testable functions for CRUD ops.
+
+- `src/pipeline/` 
+  - **Purpose:** Sequential step execution mechanism (`Pipeline.js` and `Step.js`).
+  - **Rule:** Any multi-step background or heavy processing logic (like LLM prompts, document transformations) should be modeled as Pipeline Steps that modify a shared context object.
+
+- `src/workers/` 
+  - **Purpose:** Background queue processing (e.g., AWS SQS loops).
+  - **Rule:** Workers run continuously in a loop (`while (true)`), pull jobs, process them via Pipelines or Services, handle job state updates (SUCCESS/FAILED), and delete processed queue messages. 
+
+---
+
+## 2. Error Handling: "Bubble Up" Strategy
+
+To keep logic clean and readable, we avoid deeply nested `try/catch` blocks inside the inner layers (Services, DB Controllers, Pipelines).
+
+- **Controllers are the Catch-All (Outermost Layer):** 
+  Controllers MUST wrap their execution in a standard `try...catch` block. This is where the error is caught, formatted, and sent as an HTTP response.
+  
+- **Throwing Errors Inside Logic:** 
+  If a DatabaseController query fails, it `throw`s the error. If a Service encounters invalid state, it `throw new Error(...)`. These thrown errors "bubble up" to the Controller.
+
+### Example: Controller Level (Outer Layer)
+```javascript
+export const createItem = async (req, res) => {
+    try {
+        const supabase = getAuthenticatedClient(req.accessToken);
+        const result = await myService.processCreate(supabase, req.body, req.user.id);
+        
+        return res.status(200).json({ success: true, data: result });
+    } catch (error) {
+        // Catching the bubbled-up error
+        console.error("Error creating item:", error);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+};
+```
+
+### Example: Service Level (Middle Layer)
+```javascript
+export const processCreate = async (client, body, userId) => {
+    if (!body.importantField) {
+        throw new Error("Missing important field."); // Throw, let controller catch
+    }
+    
+    // Call DB
+    const data = await dbController.insertItem(client, body, userId);
+    return data;
+};
+```
+
+### Example: DB layer (Inner Layer)
+```javascript
+export const insertItem = async (client, payload, userId) => {
+    const { data, error } = await client.from('items').insert({ ...payload, user_id: userId }).select();
+    
+    if (error) throw error; // Throw, let service/controller catch
+    return data;
+};
+```
+
+---
+
+## 3. Data Flow & Payload Formats
+- Always process Data Transformation properly. The Database normally uses `snake_case` properties. The API (Frontend) expects `camelCase` properties.
+- Use `snakeToCamel` and `camelToSnake` utilities (from `src/controllers/utils.js`) when reading from / saving to the database.
+
+## 4. Work Queue & Pipelines
+- **Pipelines:** Instantiate via `new Pipeline()`. Chain steps using `.addStep(...)`. Use a central context pattern for maintaining state across Pipeline execution. Pipeline automatically integrates with `logStep` when `supabase` and `logId` contexts are properly passed.
+- **Workers:** Job records usually map to a DB record. Worker fetches exact job `id`, updates state to `IN_PROGRESS`, executes application logic/pipeline, and updates state to `SUCCESS` or `FAILED` (and triggers `completeRequestLog` on failure/success appropriately).

@@ -10,6 +10,7 @@ import apiRequestLogRoutes from "./apiRequestLogRoutes.js";
 import jobProfileRoutes from "./jobProfileRoutes.js";
 import resumeParserRoutes from "./resumeParserRoutes.js";
 import paymentRoutes from "./paymentRoutes.js";
+import telegramRoutes from "./telegramRoutes.js";
 
 const router = express.Router();
 
@@ -24,6 +25,7 @@ router.use("/api-request-logs", apiRequestLogRoutes);
 router.use("/job-profile", jobProfileRoutes);
 router.use("/resume-parser", resumeParserRoutes);
 router.use("/payment", paymentRoutes);
+router.use("/telegram", telegramRoutes);
 
 
 export default router;

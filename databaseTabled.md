@@ -248,6 +248,25 @@ create table public.user_integrations (
 );
 
 -- -----------------------------------------------------------------------------
+-- 12. TELEGRAM USERS (For Bot Linking)
+-- Stores the mapping between Telegram Chat IDs and internal User IDs.
+-- -----------------------------------------------------------------------------
+create table public.telegram_users (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  
+  telegram_chat_id text not null,
+  is_active boolean default true,
+  
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  
+  -- Ensure one chat ID is linked to only one user (and vice-versa if desired)
+  constraint telegram_users_user_id_unique unique (user_id),
+  constraint telegram_users_chat_id_unique unique (telegram_chat_id)
+);
+
+-- -----------------------------------------------------------------------------
 -- 9. SECURITY POLICIES (Row Level Security)
 -- Ensures users can only see their own data.
 -- -----------------------------------------------------------------------------
@@ -260,6 +279,7 @@ alter table public.founder_outreaches enable row level security;
 alter table public.resume_generations enable row level security;
 alter table public.api_request_logs enable row level security;
 alter table public.job_profiles enable row level security;
+alter table public.telegram_users enable row level security;
 
 -- Create policy for user_settings
 create policy "Users can own settings" on public.user_settings
@@ -295,6 +315,12 @@ alter table public.user_integrations enable row level security;
 
 -- Policy to allow users to do everything (CRUD) on their own integrations
 create policy "Users manage own integrations" on public.user_integrations
+  for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- Policy for telegram users
+create policy "Users manage own telegram link" on public.telegram_users
   for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);

@@ -15,6 +15,7 @@ import resumeRoutes from './routes/resumeRoutes.js';
 import connectDB from './config/db.js';
 import { startWorker } from './workers/jobWorker.js';
 import routes from './routes/index.js';
+import { startTelegramBot } from './bot/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,8 +41,10 @@ app.get('/health', (req, res) => {
 });
 
 // Start Server
+await connectDB();
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
     // Start the background worker
     startWorker();
+    startTelegramBot();
 });
