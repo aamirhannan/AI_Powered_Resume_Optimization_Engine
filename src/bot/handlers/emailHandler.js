@@ -44,15 +44,36 @@ export const handleEmailInput = async (bot, chatId, userId, text) => {
         state.step = 'EMAIL_WAITING_VERIFICATION';
         await setUserState(chatId, state.step, state.data);
 
-        let msg = `Here is what I found:\n\n✉️ **Email**: ${targetEmail || 'Not found'}\n\n📄 **JD Preview**:\n${jobDescription.substring(0, 300)}...`;
+        const escapeHTML = (text) => {
+            if (!text) return text;
+            return text.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        };
 
-        if (!targetEmail) {
-            msg += `\n\n⚠️ I couldn't find an email in the post. Please reply with the correct email address to proceed.`;
-        } else {
-            msg += `\n\nIf the email is incorrect, please reply with the correct one. Otherwise, simply reply with "Yes" or "Y" to proceed.`;
+        const safeEmail = escapeHTML(targetEmail) || 'Not found';
+        const safeJD = escapeHTML(jobDescription);
+
+        const chunks = [];
+        for (let i = 0; i < safeJD.length; i += 3800) {
+            chunks.push(safeJD.substring(i, i + 3800));
         }
 
-        bot.sendMessage(chatId, msg, { parse_mode: "Markdown" });
+        if (chunks.length === 0) chunks.push("No JD content");
+
+        let firstMsg = `Here is what I found:\n\n✉️ <b>Email</b>: ${safeEmail}\n\n📄 <b>JD</b>:\n${chunks[0]}`;
+        await bot.sendMessage(chatId, firstMsg, { parse_mode: "HTML" });
+
+        for (let i = 1; i < chunks.length; i++) {
+            await bot.sendMessage(chatId, chunks[i], { parse_mode: "HTML" });
+        }
+
+        let actionMsg = "";
+        if (!targetEmail) {
+            actionMsg = `⚠️ I couldn't find an email in the post. Please reply with the correct email address to proceed.`;
+        } else {
+            actionMsg = `If the email is incorrect, please reply with the correct one. Otherwise, simply reply with "Yes" or "Y" to proceed.`;
+        }
+
+        bot.sendMessage(chatId, actionMsg, { parse_mode: "HTML" });
     } catch (error) {
         bot.sendMessage(chatId, "Failed to analyze the input. Please try again with pure text or a different URL.");
     }
