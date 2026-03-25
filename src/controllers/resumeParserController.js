@@ -16,19 +16,14 @@ export const extractTextFromPdf = async (req, res) => {
             return res.status(400).json({ error: 'No PDF file uploaded' });
         }
 
-        const dataBuffer = fs.readFileSync(req.file.path);
+        const dataBuffer = req.file.buffer;
 
         try {
             // Parse PDF data
             const data = await pdfParse(dataBuffer);
 
-            // Clean up the uploaded file
-            fs.unlinkSync(req.file.path);
-
             return res.status(200).json({ text: data.text });
         } catch (parseError) {
-            // Clean up even if parsing fails
-            fs.unlinkSync(req.file.path);
             console.error('PDF Parse Error:', parseError);
             return res.status(500).json({ error: 'Failed to parse PDF file' });
         }

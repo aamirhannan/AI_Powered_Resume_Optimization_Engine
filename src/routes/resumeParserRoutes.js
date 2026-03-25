@@ -4,7 +4,7 @@ import multer from 'multer';
 import { extractTextFromPdf, convertTextToProfile } from '../controllers/resumeParserController.js';
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Route to upload a PDF and get extracted text
 router.post('/upload', upload.single('resume'), extractTextFromPdf);
