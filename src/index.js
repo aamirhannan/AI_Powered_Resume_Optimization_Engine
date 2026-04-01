@@ -41,9 +41,16 @@ app.get('/health', (req, res) => {
 });
 
 // Start Server
-await connectDB();
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+console.log('Starting DB connection...');
+connectDB().then(() => {
+    console.log('DB connection established.');
+}).catch((err) => {
+    console.error('Initial DB connection failed:', err);
+});
+
+console.log(`Attempting to bind server to port ${PORT} on 0.0.0.0`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is successfully bound and running on http://0.0.0.0:${PORT}`);
     // Start the background worker
     startWorker();
     startTelegramBot();

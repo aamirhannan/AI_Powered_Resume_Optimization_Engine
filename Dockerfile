@@ -11,6 +11,7 @@ WORKDIR /app
 
 # Set production environment
 ENV NODE_ENV="production"
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
 
 
 # Throw-away build stage to reduce size of final image
